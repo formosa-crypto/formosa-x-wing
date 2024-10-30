@@ -1,5 +1,5 @@
-[!WARNING]  
-This proof is still work in progress.
+> [!WARNING]  
+> This proof is still work in progress.
 
 # X-Wing Proof
 
