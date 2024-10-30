@@ -1,0 +1,75 @@
+require import AllCore IntDiv ZModP SDist Distr.
+require (****) Subtype.
+
+type G.
+
+op g : G.
+
+op p : { int | 2 <= p } as ge2_p.
+axiom prime_p : prime p.
+
+clone import Subtype as EH with 
+   type T <- int 
+   rename "sT" as "ehT".
+
+clone import ZModField with
+   op p <- p
+   proof prime_p by exact prime_p
+   proof ge2_p by exact ge2_p
+   proof *.
+
+clone import Subtype as EU with 
+   type T <- zmod
+   rename "sT" as "euT".
+
+
+op exp : G -> int -> G.
+axiom ng_commute X y z : exp (exp X y) z = exp X (y*z).
+
+op (^) (g : G, x : euT) = exp g (asint (val x)).
+op phi(x : euT) : G = g ^ x.
+axiom ng_bijection :  bijective phi.
+
+op [uniform full lossless]dH : ehT distr.
+op [uniform full lossless]dU : euT distr.
+op sdist_dU_dH = sdist (dmap dH EH.val) 
+                (dmap dU (asint \o EU.val)).
+
+module type SDHO_I = {
+  proc init() : G * G
+  proc dh(Y Z : G) : bool
+}.
+
+module type SDHO_P = {
+  include SDHO_I [dh]
+}.
+
+module type SDHAdv(O : SDHO_P) = {
+  proc find(X Y : G) : G
+}.
+
+module SDHO : SDHO_I = {
+   var x : euT
+   var y : euT
+
+   proc init() : G * G = {
+      x <$ dU;
+      y <$ dU;
+      return (g^x, g^y);
+   }
+   proc dh(Y Z : G) : bool = {
+      return (Y^x = Z);
+   }
+}.
+
+module SDH(A : SDHAdv) = {
+   proc main() : bool = {
+      var _XY : G * G;
+      var _Z : G;
+      var b : bool;
+      _XY <@ SDHO.init();
+      _Z <@A(SDHO).find(_XY);
+      b <@ SDHO.dh(_XY.`2,_Z);
+      return b;
+   }
+}.
