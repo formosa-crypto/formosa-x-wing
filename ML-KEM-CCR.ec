@@ -23,20 +23,20 @@ type pkhash.
 op pkh : pkey -> pkhash.
 
 clone import KEM_ROM.KEM_ROM_x2 as KEMROMx2 with
-   type pkey <- pkey
-   type skey = (pkey * skey) * K
-   type ciphertext <- ciphertext
-   type key <- key
-   op dkey <- dkey
-   type RO1.in_t <- plaintext * pkhash
-   type RO1.out_t <- key * randomness
-   op   RO1.dout <- fun _ => dkey `*` randd
-   type RO1.d_in_t <- unit
-   type RO1.d_out_t <- bool
-   type RO2.in_t <- K * ciphertext
-   type RO2.out_t <- key
-   op   RO2.dout <- fun _ => dkey
-   type RO2.d_in_t <- unit
+   type pkey <- pkey,
+   type skey = (pkey * skey) * K,
+   type ciphertext <- ciphertext,
+   type key <- key,
+   op dkey <- dkey,
+   type RO1.in_t <- plaintext * pkhash,
+   type RO1.out_t <- key * randomness,
+   op   RO1.dout <- fun _ => dkey `*` randd,
+   type RO1.d_in_t <- unit,
+   type RO1.d_out_t <- bool,
+   type RO2.in_t <- K * ciphertext,
+   type RO2.out_t <- key,
+   op   RO2.dout <- fun _ => dkey,
+   type RO2.d_in_t <- unit,
    type RO2.d_out_t <- bool
    proof dkey_ll by apply dkey_ll
    proof dkey_uni by apply dkey_uni
