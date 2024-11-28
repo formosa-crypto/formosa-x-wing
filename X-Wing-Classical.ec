@@ -17,13 +17,13 @@ type label.
 op label : label.
 
 clone import KEM_ROM as XWING_DEFS with
-   type RO.in_t = label * KEM.key * G * G * G
-   type RO.out_t <- shkey
-   op RO.dout = fun _ => dshkey
-   type key <- shkey
-   type pkey <- pkey
-   type skey <- skey
-   type ciphertext <- ciphertext
+   type RO.in_t = label * KEM.key * G * G * G,
+   type RO.out_t <- shkey,
+   op RO.dout = fun _ => dshkey,
+   type key <- shkey,
+   type pkey <- pkey,
+   type skey <- skey,
+   type ciphertext <- ciphertext,
    op dkey <- dshkey
    proof dkey_ll by apply dshkey_ll
    proof dkey_fu by apply dshkey_fu
@@ -111,8 +111,8 @@ clone SDist.Dist as SD with (* FIXME: Clear warnings *)
    proof *.
 
 clone SD.N1 as SDD with
-   op N <- 2
-   op d1 = dmap dH EH.val
+   op N <- 2,
+   op d1 = dmap dH EH.val,
    op d2 = dmap dU (asint \o EU.val)
    proof N_ge0 by auto
    proof d1_ll by (rewrite /d1;apply dmap_ll;apply dH_ll)
