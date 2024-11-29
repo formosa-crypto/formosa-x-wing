@@ -1,0 +1,7 @@
+[submodule "formosa-mlkem"]
+	path = formosa-mlkem
+	url = https://github.com/JoaoDiogoDuarte/formosa-mlkem.git
+	branch = avx2-stack
+[submodule "formosa-25519"]
+	path = formosa-25519
+	url = git@github.com:formosa-crypto/formosa-25519.git
