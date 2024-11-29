@@ -25,7 +25,7 @@ export fn jade_kem_xwing_xwing_amd64_avx2_keypair_derand(
   skp = sk;
   rdp = rd;
   
-  pkp, skp = __crypto_xkem_keypair_jazz(pkp, skp, rdp);  
+  skp, pkp = _crypto_xkem_keypair_derand_jazz(skp, pkp, rdp);  
   
   () = #unspill(public_key);
   () = #unspill(secret_key);
@@ -41,7 +41,7 @@ export fn jade_kem_xwing_xwing_amd64_avx2_keypair_derand(
   () = #spill(secret_key);
 
   ?{}, r = #set0();
-  return public_key, secret_key, r;
+  return secret_key, public_key, r;
 }
 
 export fn jade_kem_xwing_xwing_amd64_avx2_enc_derand(
@@ -74,7 +74,17 @@ export fn jade_kem_xwing_xwing_amd64_avx2_enc_derand(
   shkp = shk;
   rdp = rd;
   
-  ctp, shkp =__crypto_xkem_enc_jazz(ctp, shkp, pkp, rdp);
+  ctp = ctp;
+  pkp = pkp;
+  shkp = shkp;
+  rdp = rdp;
+  
+  ctp, shkp =_crypto_xkem_enc_derand_jazz(ctp, shkp, pkp, rdp);
+  
+  ctp = ctp;
+  pkp = pkp;
+  shkp = shkp;
+  rdp = rdp;
   
   () = #unspill(ciphertext);
   () = #unspill(shared_secret);
@@ -116,10 +126,18 @@ export fn jade_kem_xwing_xwing_amd64_avx2_dec(
   shkp = shk;
   skp = sk;
   
-  shkp = __crypto_xkem_dec_jazz(shkp, ctp, skp);
+  ctp = ctp;
+  skp = skp;
+  shkp = shkp;
+  
+  shkp = _crypto_xkem_dec_jazz(shkp, ctp, skp);
 
   () = #unspill(shared_secret);
-  
+
+  ctp = ctp;
+  skp = skp;
+  shkp = shkp;
+    
   shk = shkp;
   sk = skp;  
   ct = ctp;

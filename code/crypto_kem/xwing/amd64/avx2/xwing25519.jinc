@@ -1,6 +1,6 @@
-from Formosa_25519 require "scalarmult.jinc"
+from formosa25519 require "crypto_scalarmult/curve25519/amd64/mulx/curve25519.jinc"
 
-fn xwing_x25519_base(#spill_to_mmx reg ptr u8 _q[32], reg ptr u8[32] _n)
+fn xwing_x25519_base(#spill_to_mmx reg ptr u8[32] _q, reg ptr u8[32] _n) -> reg ptr u8[32]
 {
   reg u64[4] q n;
   inline int i;

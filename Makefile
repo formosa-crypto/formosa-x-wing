@@ -6,10 +6,11 @@ OS      := $(shell uname -s)
 JASMINC ?= jasminc
 JFLAGS  ?= -lazy-regalloc
 
-JINCLUDE_MLKEM  :=  -I Formosa_MLKEM:formosa-mlkem/code/jasmin/mlkem_avx2/
-JINCLUDE_X25519 :=  -I Formosa_X25519:formosa-25519/src/crypto_scalarmult/curve25519/amd64/mulx/
+JINCLUDE_MLKEM  :=  -I formosamlkem:formosa-mlkem/code/jasmin/mlkem_avx2/
+JINCLUDE_X25519 :=  -I formosa25519:formosa-25519/src/
+
 XWING_SRC       := code/crypto_kem/xwing/amd64/avx2
 
 
-%.s: %.jazz
-	$(JASMINC) $(JFLAGS) -o $@ $(JFLAGS) $(JINCLUDE) $^
+$(XWING_SRC)/jkem.s : $(XWING_SRC)/jkem.jazz
+	$(JASMINC) $(JFLAGS) -o $@ $(JFLAGS) $(JINCLUDE_MLKEM) $(JINCLUDE_X25519) $^
