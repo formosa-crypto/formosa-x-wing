@@ -1,0 +1,49 @@
+from Formosa_MLKEM require "keccak/keccak1600_imem_avx2.jinc"
+from Formosa_MLKEM require "keccak/keccak1600x4_imem_avx2.jinc"
+
+
+namespace A32 {
+  param int ASIZE = 32;
+  from Formosa_MLKEM require "keccak/keccak1600_array_avx2_ASIZE.jinc"
+  from Formosa_MLKEM require "keccak/keccak1600x4_array_avx2_ASIZE.jinc"
+}
+
+namespace A96 {
+  param int ASIZE = 96;
+  from Formosa_MLKEM require "keccak/keccak1600_array_avx2_ASIZE.jinc"
+  from Formosa_MLKEM require "keccak/keccak1600x4_array_avx2_ASIZE.jinc"
+}
+
+namespace A134 {
+  param int ASIZE = 134;
+  from Formosa_MLKEM require "keccak/keccak1600_array_avx2_ASIZE.jinc"
+  from Formosa_MLKEM require "keccak/keccak1600x4_array_avx2_ASIZE.jinc"
+}
+
+fn _shake256_A96__A32
+(   #spill_to_mmx reg mut ptr u8[96] out
+   , reg const ptr u8[32] in
+) -> reg ptr u8[32]
+{ reg u256[7] st;
+  reg u64 offset;
+  st = __state_init_avx2();
+  offset = 0;
+  st, _ = A32::__absorb_array_avx2(st, in, offset, 32, R136, SHAKE);
+  offset = 0;
+  out, _ = A96::__squeeze_array_avx2(out, offset, 96, st, R136);
+  return out; }
+
+
+n _sha3_256A_A134
+( #spill_to_mmx reg mut ptr u8[32] out
+, reg const ptr u8[134] in
+) -> reg ptr u8[32]
+{ reg u256[7] st;
+  reg u64 offset;
+  st = __state_init_avx2();
+  st, _ = A134::__absorb_array_avx2(st, in, 0, 136, R136, SHA3);
+  offset = 0;
+  out, _ = A32::__squeeze_array_avx2(out, offset, 32, st, R136);
+
+  return out;
+}

@@ -1,0 +1,132 @@
+require "kem.jinc"
+
+export fn jade_kem_xwing_xwing_amd64_avx2_keypair_derand(
+    #spill_to_mmx reg ptr u8[XWING_PUBLICKEYBYTES] public_key,
+    #spill_to_mmx reg ptr u8[XWING_EXPANDED_SECRETKEYBYTES] secret_key,
+    #spill_to_mmx reg ptr u8[XWING_SEEDBYTES] coins) 
+ -> reg ptr u8[XWING_EXPANDED_SECRETKEYBYTES], reg ptr u8[XWING_PUBLICKEYBYTES], reg u64
+{
+  reg u64 r;
+  stack u8[XWING_PUBLICKEYBYTES] pk;
+  reg ptr u8[XWING_PUBLICKEYBYTES] pkp;
+  stack u8[XWING_EXPANDED_SECRETKEYBYTES] sk;
+  reg ptr u8[XWING_EXPANDED_SECRETKEYBYTES] skp;
+
+  stack u8[XWING_SEEDBYTES] rd;
+  reg ptr u8[XWING_SEEDBYTES] rdp;     
+  _ = #init_msf();
+
+  () = #spill(public_key);
+  () = #spill(secret_key);
+  
+  rd = #copy(coins);
+  
+  pkp = pk;
+  skp = sk;
+  rdp = rd;
+  
+  pkp, skp = __crypto_xkem_keypair_jazz(pkp, skp, rdp);  
+  
+  () = #unspill(public_key);
+  () = #unspill(secret_key);
+  
+  pk = pkp;
+  sk = skp;
+  rd = rdp;
+    
+  public_key = #copy(pk);
+  secret_key = #copy(sk);
+
+  () = #spill(public_key);
+  () = #spill(secret_key);
+
+  ?{}, r = #set0();
+  return public_key, secret_key, r;
+}
+
+export fn jade_kem_xwing_xwing_amd64_avx2_enc_derand(
+    #spill_to_mmx reg ptr u8[XWING_CIPHERTEXTBYTES] ciphertext,
+    #spill_to_mmx reg ptr u8[XWING_BYTES] shared_secret,
+    #spill_to_mmx reg ptr u8[XWING_PUBLICKEYBYTES] public_key,
+    #spill_to_mmx reg ptr u8[XWING_ENC_SEEDBYTES] coins) 
+    -> reg ptr u8[XWING_CIPHERTEXTBYTES], reg ptr u8[XWING_BYTES], reg u64
+{
+  reg u64 r;
+  stack u8[XWING_CIPHERTEXTBYTES] ct;
+  reg ptr u8[XWING_CIPHERTEXTBYTES] ctp;  
+  stack u8[XWING_BYTES] shk;
+  reg ptr u8[XWING_BYTES] shkp;
+  stack u8[XWING_PUBLICKEYBYTES] pk;
+  reg ptr u8[XWING_PUBLICKEYBYTES] pkp;
+  
+  stack u8[XWING_ENC_SEEDBYTES] rd;
+  reg ptr u8[XWING_ENC_SEEDBYTES] rdp;
+
+  _ = #init_msf();
+
+  () = #spill(ciphertext);
+  () = #spill(shared_secret);
+  pk =  #copy(public_key);
+  rd =  #copy(coins);
+
+  ctp = ct;
+  pkp = pk;
+  shkp = shk;
+  rdp = rd;
+  
+  ctp, shkp =__crypto_xkem_enc_jazz(ctp, shkp, pkp, rdp);
+  
+  () = #unspill(ciphertext);
+  () = #unspill(shared_secret);
+
+  ct = ctp;
+  shk = shkp;
+  pk = pkp;
+  rd = rdp;
+ 
+  ciphertext = #copy(ct);
+  shared_secret = #copy(shk);
+
+  ?{}, r = #set0();
+  return ciphertext, shared_secret, r;
+}
+
+export fn jade_kem_xwing_xwing_amd64_avx2_dec(
+    #spill_to_mmx reg ptr u8[XWING_BYTES] shared_secret, 
+    reg ptr u8[XWING_CIPHERTEXTBYTES] ciphertext, 
+    reg ptr u8[XWING_SECRETKEYBYTES] secret_key) 
+    -> reg ptr u8[XWING_BYTES], reg u64
+{
+  reg u64 r;
+  stack u8[XWING_BYTES] shk;
+  reg ptr u8[XWING_BYTES] shkp;   
+  stack u8[XWING_SECRETKEYBYTES] sk;
+  reg ptr u8[XWING_SECRETKEYBYTES] skp;
+  stack u8[XWING_CIPHERTEXTBYTES] ct;
+  reg ptr u8[XWING_CIPHERTEXTBYTES] ctp;
+
+  _ = #init_msf();
+
+  () = #spill(shared_secret);
+
+  ct =  #copy(ciphertext);
+  sk =  #copy(secret_key);
+
+  ctp = ct;
+  shkp = shk;
+  skp = sk;
+  
+  shkp = __crypto_xkem_dec_jazz(shkp, ctp, skp);
+
+  () = #unspill(shared_secret);
+  
+  shk = shkp;
+  sk = skp;  
+  ct = ctp;
+
+  shared_secret = #copy(shk);
+
+
+  ?{}, r = #set0();
+  return shared_secret, r;
+}
