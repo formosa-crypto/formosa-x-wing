@@ -1,45 +1,26 @@
 require "kem.jinc"
 
 export fn jade_kem_xwing_xwing_amd64_avx2_keypair_derand(
-    #spill_to_mmx reg ptr u8[XWING_PUBLICKEYBYTES] public_key,
     #spill_to_mmx reg ptr u8[XWING_EXPANDED_SECRETKEYBYTES] secret_key,
-    #spill_to_mmx reg ptr u8[XWING_SEEDBYTES] coins) 
+    #spill_to_mmx reg ptr u8[XWING_PUBLICKEYBYTES] public_key,
+                  reg ptr u8[XWING_SEEDBYTES] coins) 
  -> reg ptr u8[XWING_EXPANDED_SECRETKEYBYTES], reg ptr u8[XWING_PUBLICKEYBYTES], reg u64
 {
   reg u64 r;
-  stack u8[XWING_PUBLICKEYBYTES] pk;
-  reg ptr u8[XWING_PUBLICKEYBYTES] pkp;
-  stack u8[XWING_EXPANDED_SECRETKEYBYTES] sk;
-  reg ptr u8[XWING_EXPANDED_SECRETKEYBYTES] skp;
-
-  stack u8[XWING_SEEDBYTES] rd;
-  reg ptr u8[XWING_SEEDBYTES] rdp;     
+      
   _ = #init_msf();
 
-  () = #spill(public_key);
-  () = #spill(secret_key);
+  () = #spill(coins);
   
-  rd = #copy(coins);
+  secret_key = secret_key;  
+  public_key = public_key;  
+  coins = coins;  
   
-  pkp = pk;
-  skp = sk;
-  rdp = rd;
+  secret_key, public_key = _crypto_xkem_keypair_derand_jazz(secret_key, public_key, coins);  
   
-  skp, pkp = _crypto_xkem_keypair_derand_jazz(skp, pkp, rdp);  
+  secret_key = secret_key;  
+  public_key = public_key;  
   
-  () = #unspill(public_key);
-  () = #unspill(secret_key);
-  
-  pk = pkp;
-  sk = skp;
-  rd = rdp;
-    
-  public_key = #copy(pk);
-  secret_key = #copy(sk);
-
-  () = #spill(public_key);
-  () = #spill(secret_key);
-
   ?{}, r = #set0();
   return secret_key, public_key, r;
 }
@@ -52,54 +33,25 @@ export fn jade_kem_xwing_xwing_amd64_avx2_enc_derand(
     -> reg ptr u8[XWING_CIPHERTEXTBYTES], reg ptr u8[XWING_BYTES], reg u64
 {
   reg u64 r;
-  stack u8[XWING_CIPHERTEXTBYTES] ct;
-  reg ptr u8[XWING_CIPHERTEXTBYTES] ctp;  
-  stack u8[XWING_BYTES] shk;
-  reg ptr u8[XWING_BYTES] shkp;
-  stack u8[XWING_PUBLICKEYBYTES] pk;
-  reg ptr u8[XWING_PUBLICKEYBYTES] pkp;
-  
-  stack u8[XWING_ENC_SEEDBYTES] rd;
-  reg ptr u8[XWING_ENC_SEEDBYTES] rdp;
 
   _ = #init_msf();
 
-  () = #spill(ciphertext);
-  () = #spill(shared_secret);
-  pk =  #copy(public_key);
-  rd =  #copy(coins);
-
-  ctp = ct;
-  pkp = pk;
-  shkp = shk;
-  rdp = rd;
+  () = #spill(public_key, coins);
   
-  ctp = ctp;
-  pkp = pkp;
-  shkp = shkp;
-  rdp = rdp;
+  ciphertext = ciphertext;
+  shared_secret = shared_secret;
+  public_key = public_key;
+  coins = coins;
+                                      
+  ciphertext, shared_secret =_crypto_xkem_enc_derand_jazz(ciphertext, shared_secret, public_key, coins);
+    
+  ciphertext = ciphertext;
+  shared_secret = shared_secret;
   
-  ctp, shkp =_crypto_xkem_enc_derand_jazz(ctp, shkp, pkp, rdp);
-  
-  ctp = ctp;
-  pkp = pkp;
-  shkp = shkp;
-  rdp = rdp;
-  
-  () = #unspill(ciphertext);
-  () = #unspill(shared_secret);
-
-  ct = ctp;
-  shk = shkp;
-  pk = pkp;
-  rd = rdp;
- 
-  ciphertext = #copy(ct);
-  shared_secret = #copy(shk);
-
   ?{}, r = #set0();
   return ciphertext, shared_secret, r;
 }
+
 
 export fn jade_kem_xwing_xwing_amd64_avx2_dec(
     #spill_to_mmx reg ptr u8[XWING_BYTES] shared_secret, 
@@ -108,42 +60,18 @@ export fn jade_kem_xwing_xwing_amd64_avx2_dec(
     -> reg ptr u8[XWING_BYTES], reg u64
 {
   reg u64 r;
-  stack u8[XWING_BYTES] shk;
-  reg ptr u8[XWING_BYTES] shkp;   
-  stack u8[XWING_SECRETKEYBYTES] sk;
-  reg ptr u8[XWING_SECRETKEYBYTES] skp;
-  stack u8[XWING_CIPHERTEXTBYTES] ct;
-  reg ptr u8[XWING_CIPHERTEXTBYTES] ctp;
 
   _ = #init_msf();
 
-  () = #spill(shared_secret);
-
-  ct =  #copy(ciphertext);
-  sk =  #copy(secret_key);
-
-  ctp = ct;
-  shkp = shk;
-  skp = sk;
+  () = #spill(ciphertext, secret_key);
   
-  ctp = ctp;
-  skp = skp;
-  shkp = shkp;
+  shared_secret = shared_secret;
+  ciphertext = ciphertext;
+  secret_key = secret_key;
+      
+  shared_secret = _crypto_xkem_dec_jazz(shared_secret, ciphertext, secret_key);
   
-  shkp = _crypto_xkem_dec_jazz(shkp, ctp, skp);
-
-  () = #unspill(shared_secret);
-
-  ctp = ctp;
-  skp = skp;
-  shkp = shkp;
-    
-  shk = shkp;
-  sk = skp;  
-  ct = ctp;
-
-  shared_secret = #copy(shk);
-
+  shared_secret = shared_secret;
 
   ?{}, r = #set0();
   return shared_secret, r;

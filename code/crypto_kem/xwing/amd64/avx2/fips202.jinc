@@ -1,15 +1,16 @@
 from formosamlkem require "keccak/keccak1600_imem_avx2.jinc"
 from formosamlkem require "keccak/keccak1600x4_imem_avx2.jinc"
+require "params.jinc"
 
 
-namespace A96 {
-  param int ASIZE = 96;
+namespace A6 {
+  param int ASIZE = 6;
   from formosamlkem require "keccak/keccak1600_array_avx2_ASIZE.jinc"
   from formosamlkem require "keccak/keccak1600x4_array_avx2_ASIZE.jinc"
 }
 
-namespace A134 {
-  param int ASIZE = 134;
+namespace A96 {
+  param int ASIZE = 96;
   from formosamlkem require "keccak/keccak1600_array_avx2_ASIZE.jinc"
   from formosamlkem require "keccak/keccak1600x4_array_avx2_ASIZE.jinc"
 }
@@ -28,14 +29,19 @@ fn _shake256_A96__A32
   return out; }
 
 
-fn _sha3_256__A134
+fn _sha3_256_A6__A128
 ( #spill_to_mmx reg mut ptr u8[32] out
-, reg const ptr u8[134] in
+, reg const ptr u8[128] in
 ) -> reg ptr u8[32]
 { reg u256[7] st;
+  stack u64[25] pst;
   reg u64 offset;
   st = __state_init_avx2();
-  st, _ = A134::__absorb_array_avx2(st, in, 0, 136, R136, SHA3);
+  pst = __pstate_init_avx2(pst);
+  offset = 0;
+  pst, _, st, _ = A6::__pabsorb_array_avx2(pst, 0, st, XWING_LABEL, offset, 6, R136, UNFINISHED);
+  offset = 0;
+  pst, _, st, _ = A128::__pabsorb_array_avx2(pst, 32, st, in, offset, 128, R136, SHA3);
   offset = 0;
   out, _ = A32::__squeeze_array_avx2(out, offset, 32, st, R136);
 
