@@ -6,3 +6,4 @@
 *.eco
 .ci
 .vscode/
+*.s
