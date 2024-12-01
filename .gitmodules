@@ -5,3 +5,6 @@
 [submodule "formosa-25519"]
 	path = formosa-25519
 	url = git@github.com:formosa-crypto/formosa-25519.git
+[submodule "crypto-specs"]
+	path = crypto-specs
+	url = git@github.com:formosa-crypto/crypto-specs.git
