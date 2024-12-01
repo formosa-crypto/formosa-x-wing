@@ -1,16 +1,19 @@
-CC      ?= clang
-CFLAGS  ?= -O3 -Wall -Wextra -Wpedantic -Wvla -Werror -std=c99 \
-	         -Wundef -Wshadow -Wcast-align -Wpointer-arith -Wmissing-prototypes \
-	         -fstrict-aliasing -fno-common -pipe
-OS      := $(shell uname -s)
-JASMINC ?= jasminc
-JFLAGS  ?= -lazy-regalloc
+XWING_SRC := code/crypto_kem/xwing/amd64/avx2
 
-JINCLUDE_MLKEM  :=  -I formosamlkem:formosa-mlkem/code/jasmin/mlkem_avx2/
-JINCLUDE_X25519 :=  -I formosa25519:formosa-25519/src/
+.PHONY: default jasmin extract clean_eco clean_asm clean
 
-XWING_SRC       := code/crypto_kem/xwing/amd64/avx2
+default: jasmin 
 
+jasmin:
+	make -C $(XWING_SRC)/
 
-$(XWING_SRC)/jkem.s : $(XWING_SRC)/jkem.jazz
-	$(JASMINC) $(JFLAGS) -o $@ $(JFLAGS) $(JINCLUDE_MLKEM) $(JINCLUDE_X25519) $^
+extract:
+	make -C $(XWING_SRC)/extraction
+
+clean_asm:
+	-rm -f $(XWING_SRC)/jkem.s
+
+clean_eco:
+	find proof -name '*.eco' -exec rm '{}' ';'
+
+clean: clean_asm clean_eco

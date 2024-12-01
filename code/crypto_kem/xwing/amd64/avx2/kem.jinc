@@ -21,7 +21,7 @@ fn _crypto_xkem_keypair_derand_jazz(
     
   spkp[0:MLKEM_PUBLICKEYBYTES], sskp[0:MLKEM_SECRETKEYBYTES] = __crypto_kem_keypair_jazz(spkp[0:MLKEM_PUBLICKEYBYTES], sskp[0:MLKEM_SECRETKEYBYTES], expanded[0:XWING_BYTES*2]);   
   spkp[MLKEM_PUBLICKEYBYTES:X25519_BYTES] = xwing_x25519_base(spkp[MLKEM_PUBLICKEYBYTES:X25519_BYTES], expanded[XWING_BYTES*2:X25519_BYTES]);
-    
+     
   () = #unspill(skp, pkp);
   pkp = #copy(spkp);
   skp = #copy(sskp);

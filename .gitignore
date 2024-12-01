@@ -7,3 +7,5 @@
 .ci
 .vscode/
 *.s
+*.o
+code/crypto_kem/xwing/amd64/avx2/extraction/Arrays/
