@@ -12815,59 +12815,43 @@ module M = {
     r <@ __curve25519_internal_mulx (k, u);
     return r;
   }
-  proc xwing_x25519_base (_q:W8.t Array32.t, _n:W8.t Array32.t) : W8.t Array32.t = {
-    var aux:int;
-    var i:int;
+  proc xwing_x25519_base (qp:W8.t Array32.t, np:W8.t Array32.t) : W8.t Array32.t = {
     var n:W64.t Array4.t;
     var q:W64.t Array4.t;
     n <- witness;
     q <- witness;
     (* Erased call to spill *)
-    i <- 0;
-    while ((i < 4)) {
-      n.[i] <- (get64 (WArray32.init8 (fun i_0 => _n.[i_0])) i);
-      i <- (i + 1);
-    }
+    n <-
+    (copy_64
+    (Array4.init (fun i => (get64 (WArray32.init8 (fun i => np.[i])) i))));
     q <@ __curve25519_mulx_base (n);
     (* Erased call to unspill *)
-    i <- 0;
-    while ((i < 4)) {
-      _q <-
-      (Array32.init
-      (WArray32.get8
-      (WArray32.set64 (WArray32.init8 (fun i_0 => _q.[i_0])) i q.[i])));
-      i <- (i + 1);
-    }
-    return _q;
+    qp <-
+    (Array32.init
+    (fun i => (get8 (WArray32.init64 (fun i => (copy_64 q).[i])) i)));
+    return qp;
   }
-  proc xwing_x25519 (_q:W8.t Array32.t, _n:W8.t Array32.t, _p:W8.t Array32.t) : 
+  proc xwing_x25519 (qp:W8.t Array32.t, np:W8.t Array32.t, pp:W8.t Array32.t) : 
   W8.t Array32.t = {
-    var aux:int;
-    var i:int;
-    var n:W64.t Array4.t;
     var p:W64.t Array4.t;
+    var n:W64.t Array4.t;
     var q:W64.t Array4.t;
     n <- witness;
     p <- witness;
     q <- witness;
     (* Erased call to spill *)
-    i <- 0;
-    while ((i < 4)) {
-      n.[i] <- (get64 (WArray32.init8 (fun i_0 => _n.[i_0])) i);
-      p.[i] <- (get64 (WArray32.init8 (fun i_0 => _p.[i_0])) i);
-      i <- (i + 1);
-    }
+    p <-
+    (copy_64
+    (Array4.init (fun i => (get64 (WArray32.init8 (fun i => pp.[i])) i))));
+    n <-
+    (copy_64
+    (Array4.init (fun i => (get64 (WArray32.init8 (fun i => np.[i])) i))));
     q <@ __curve25519_mulx (n, p);
     (* Erased call to unspill *)
-    i <- 0;
-    while ((i < 4)) {
-      _q <-
-      (Array32.init
-      (WArray32.get8
-      (WArray32.set64 (WArray32.init8 (fun i_0 => _q.[i_0])) i q.[i])));
-      i <- (i + 1);
-    }
-    return _q;
+    qp <-
+    (Array32.init
+    (fun i => (get8 (WArray32.init64 (fun i => (copy_64 q).[i])) i)));
+    return qp;
   }
   proc _crypto_xkem_dec_jazz (shkp:W8.t Array32.t, ctp:W8.t Array1120.t,
                               skp:W8.t Array32.t) : W8.t Array32.t = {

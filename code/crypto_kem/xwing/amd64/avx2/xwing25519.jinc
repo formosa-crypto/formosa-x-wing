@@ -1,34 +1,33 @@
 from formosa25519 require "crypto_scalarmult/curve25519/amd64/mulx/curve25519.jinc"
 
-fn xwing_x25519_base(#spill_to_mmx reg ptr u8[32] _q, reg ptr u8[32] _n) -> reg ptr u8[32]
+fn xwing_x25519_base(#spill_to_mmx reg ptr u8[32] qp, reg ptr u8[32] np) -> reg ptr u8[32]
 {
   reg u64[4] q n;
   
   
-  () = #spill(_q);
-  n = #copy(_n);
+  () = #spill(qp);
+  n = #copy(np);
 
   q = __curve25519_mulx_base(n); // q = nG
   
-  () = #unspill(_q);  
-  _q = #copy(q);
-  return _q;
+  () = #unspill(qp);  
+  qp = #copy(q);
+  return qp;
   
 }
 
-fn xwing_x25519(#spill_to_mmx reg ptr u8[32] _q, reg ptr u8[32] _n, reg ptr u8[32] _p) -> reg ptr u8[32]
+fn xwing_x25519(#spill_to_mmx reg ptr u8[32] qp, reg ptr u8[32] np, reg ptr u8[32] pp) -> reg ptr u8[32]
 {
   reg u64[4] q n p;
   
 
-  () = #spill(_q);
-  p = #copy(_p);
-  n = #copy(_n);
-
+  () = #spill(qp);
+  p = #copy(pp);
+  n = #copy(np);
   q = __curve25519_mulx(n, p); // q = nP
 
-  () = #unspill(_q);
-  q = #copy(q);
+  () = #unspill(qp);
+  qp = #copy(q);
 
-  return _q;
+  return qp;
 }
