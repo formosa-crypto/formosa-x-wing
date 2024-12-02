@@ -29,7 +29,17 @@ fn _shake256_A96__A32
   return out; }
 
 
-fn _sha3_256_A6__A128
+/*
+def Combiner(ss_M, ss_X, ct_X, pk_X):
+     return SHA3-256(concat(
+       ss_M,
+       ss_X,
+       ct_X,
+       pk_X,
+       XWingLabel
+     ))
+ */
+fn _sha3_256_A128__A6
 ( #spill_to_mmx reg mut ptr u8[32] out
 , reg const ptr u8[128] in
 ) -> reg ptr u8[32]
@@ -39,11 +49,10 @@ fn _sha3_256_A6__A128
   st = __state_init_avx2();
   pst = __pstate_init_avx2(pst);
   offset = 0;
-  pst, _, st, _ = A6::__pabsorb_array_avx2(pst, 0, st, XWING_LABEL, offset, 6, R136, UNFINISHED);
+  pst, _, st, _ = A128::__pabsorb_array_avx2(pst, 0, st, in, offset, 128, R136, UNFINISHED);
   offset = 0;
-  pst, _, st, _ = A128::__pabsorb_array_avx2(pst, 32, st, in, offset, 128, R136, SHA3);
+  pst, _, st, _ = A6::__pabsorb_array_avx2(pst, 128, st, XWING_LABEL, offset, 6, R136, SHA3);
   offset = 0;
   out, _ = A32::__squeeze_array_avx2(out, offset, 32, st, R136);
-
   return out;
 }

@@ -6,27 +6,35 @@ require "fips202.jinc"
 require "xwing25519.jinc"
 
 fn _crypto_xkem_keypair_derand_jazz(
-    reg ptr u8[XWING_EXPANDED_SECRETKEYBYTES] skp, 
     reg ptr u8[XWING_PUBLICKEYBYTES] pkp, 
+    reg ptr u8[XWING_SECRETKEYBYTES] skp, 
     reg ptr u8[XWING_SEEDBYTES] randomness) 
-    -> reg ptr u8[XWING_EXPANDED_SECRETKEYBYTES], reg ptr u8[XWING_PUBLICKEYBYTES]
+    -> reg ptr u8[XWING_PUBLICKEYBYTES], reg ptr u8[XWING_SECRETKEYBYTES]
 {
   stack u8[96] expanded;
   stack u8[XWING_PUBLICKEYBYTES] spkp;
   stack u8[XWING_EXPANDED_SECRETKEYBYTES] sskp;
+  stack u8[XWING_SECRETKEYBYTES] srandomness;
   
   () = #spill(pkp, skp, randomness);
+  srandomness = #copy(randomness); // Unsure why we need to make a copy of this reg ptr (weird ABI rules?)
   
-  expanded = _shake256_A96__A32(expanded, randomness);
-    
+  // expanded = SHAKE256(sk, 96)  
+  expanded = _shake256_A96__A32(expanded, srandomness);
+  
+  // (pk_M, sk_M) = ML-KEM-768.KeyGen_internal(expanded[0:32], expanded[32:64]) and pkp = [pk_m 0] 
   spkp[0:MLKEM_PUBLICKEYBYTES], sskp[0:MLKEM_SECRETKEYBYTES] = __crypto_kem_keypair_jazz(spkp[0:MLKEM_PUBLICKEYBYTES], sskp[0:MLKEM_SECRETKEYBYTES], expanded[0:XWING_BYTES*2]);   
+  
+  // ignoring the assignment sk_X = expanded[64:96] as we do not use it in this step key generation
+  // pk_X = X25519(sk_X, X25519_BASE) and pkp = [pk_m pk_x]
   spkp[MLKEM_PUBLICKEYBYTES:X25519_BYTES] = xwing_x25519_base(spkp[MLKEM_PUBLICKEYBYTES:X25519_BYTES], expanded[XWING_BYTES*2:X25519_BYTES]);
      
   () = #unspill(skp, pkp);
   pkp = #copy(spkp);
-  skp = #copy(sskp);
+  // in the rfc, sk = randomness
+  skp = #copy(srandomness);
   
-  return skp, pkp;
+  return pkp, skp;
 }
 
 
@@ -45,16 +53,26 @@ fn _crypto_xkem_enc_derand_jazz(
   
   () = #spill(ctp, shkp, pkp, eseed);
   
-  spkp = #copy(pkp);  // Unsure why we need to make a copy of this reg ptr (weird ABI rules?)
+  spkp = #copy(pkp);     // Unsure why we need to make a copy of this reg ptr (weird ABI rules?)
   seseed = #copy(eseed); // Unsure why we need to make a copy of this reg ptr (weird ABI rules?)
-                  
-  in[MLKEM_SYMBYTES + X25519_BYTES:X25519_BYTES] = xwing_x25519(sctp[MLKEM_SYMBYTES + X25519_BYTES:X25519_BYTES], seseed[XWING_BYTES:XWING_BYTES], spkp[MLKEM_PUBLICKEYBYTES:X25519_BYTES]);
   
-  sctp[0:MLKEM_CIPHERTEXTBYTES], in[0:MLKEM_SYMBYTES] =  __crypto_kem_enc_jazz(sctp[0:MLKEM_CIPHERTEXTBYTES], in[0:MLKEM_SYMBYTES], spkp[0:MLKEM_PUBLICKEYBYTES], seseed[0:XWING_BYTES]);  
-  sctp[MLKEM_CIPHERTEXTBYTES:X25519_BYTES] = xwing_x25519_base(sctp[MLKEM_CIPHERTEXTBYTES:X25519_BYTES], seseed[XWING_BYTES:XWING_BYTES]);
-    
-  sshkp = _sha3_256_A6__A128(sshkp, in); 
-    
+  // pk_X = pk[1184:1216] and in = [0 0 0 pk_x]
+  in[MLKEM_SYMBYTES + X25519_BYTES + X25519_BYTES: X25519_BYTES] = #copy(spkp[MLKEM_PUBLICKEYBYTES:X25519_BYTES]);
+  
+  // ct_X = X25519(eseed[32:64], X25519_BASE) and in = [0 0 0 pk_x] and ctp = [0 ct_x]
+  in[MLKEM_SYMBYTES + X25519_BYTES: X25519_BYTES] = xwing_x25519_base(in[MLKEM_SYMBYTES + X25519_BYTES: X25519_BYTES], seseed[XWING_BYTES:X25519_BYTES]);                 
+  sctp[MLKEM_CIPHERTEXTBYTES:X25519_BYTES] = #copy(in[MLKEM_SYMBYTES + X25519_BYTES: X25519_BYTES]);
+  
+  // ss_X = X25519(eseed[32:64], pk_X) and in = [0 ss_x ct_x pk_x]
+  in[MLKEM_SYMBYTES:X25519_BYTES] = xwing_x25519(in[MLKEM_SYMBYTES:X25519_BYTES], seseed[XWING_BYTES:X25519_BYTES], spkp[MLKEM_PUBLICKEYBYTES:X25519_BYTES]); 
+         
+  // (ct_M, ss_M) = ML-KEM-768.EncapsDerand(pk_M, eseed[0:32]) and in = [ss_m ss_x ct_x pk_x]
+  // and ctp = [ct_m ct_x]
+  sctp[0:MLKEM_CIPHERTEXTBYTES], in[0:MLKEM_SYMBYTES] =  __crypto_kem_enc_jazz(sctp[0:MLKEM_CIPHERTEXTBYTES], in[0:MLKEM_SYMBYTES], spkp[0:MLKEM_PUBLICKEYBYTES], seseed[0:XWING_BYTES]);          
+  
+  // ss = Combiner(ss_M, ss_X, ct_X, pk_X), so in this case Combiner(in); 
+  sshkp = _sha3_256_A128__A6(sshkp, in); 
+      
   () = #unspill(shkp, ctp);
   
   ctp = #copy(sctp);
@@ -75,20 +93,35 @@ fn _crypto_xkem_dec_jazz(
   stack u8[XWING_BYTES] sshkp;
   stack u8[XWING_PUBLICKEYBYTES] spkp;
   stack u8[XWING_CIPHERTEXTBYTES] sctp;
-  stack u8[XWING_EXPANDED_SECRETKEYBYTES] expanded_sk;
+  stack u8[XWING_EXPANDED_SECRETKEYBYTES] sskp;
   
   () = #spill(shkp, ctp, skp);
   
   sctp = #copy(ctp); // Unsure why we need to make a copy of this reg ptr, will not work otherwise (weird ABI rules?)
   
+  // expanded = SHAKE256(sk, 96)
   expanded = _shake256_A96__A32(expanded, skp);
   
-  spkp[0:MLKEM_PUBLICKEYBYTES], expanded_sk[0:MLKEM_SECRETKEYBYTES] = __crypto_kem_keypair_jazz(spkp[0:MLKEM_PUBLICKEYBYTES], expanded_sk[0:MLKEM_SECRETKEYBYTES], expanded[0:XWING_BYTES*2]);   
-  spkp[MLKEM_PUBLICKEYBYTES:X25519_BYTES] = xwing_x25519_base(spkp[MLKEM_PUBLICKEYBYTES:X25519_BYTES], expanded[XWING_BYTES*2:X25519_BYTES]);
-  in[0:MLKEM_SYMBYTES] = __crypto_kem_dec_jazz(in[0:MLKEM_SYMBYTES], sctp[0:MLKEM_CIPHERTEXTBYTES], expanded_sk[0:MLKEM_SECRETKEYBYTES]);
-  in[MLKEM_SYMBYTES + X25519_BYTES:X25519_BYTES] = xwing_x25519(in[MLKEM_SYMBYTES + X25519_BYTES:X25519_BYTES], expanded_sk[MLKEM_SECRETKEYBYTES:XWING_BYTES], sctp[MLKEM_CIPHERTEXTBYTES:X25519_BYTES]);
+  // (pk_M, sk_M) = ML-KEM-768.KeyGen_internal(expanded[0:32], expanded[32:64]) and pkp = [pk_m 0] 
+  spkp[0:MLKEM_PUBLICKEYBYTES], sskp[0:MLKEM_SECRETKEYBYTES] = __crypto_kem_keypair_jazz(spkp[0:MLKEM_PUBLICKEYBYTES], sskp[0:MLKEM_SECRETKEYBYTES], expanded[0:XWING_BYTES*2]);   
   
-  sshkp = _sha3_256_A6__A128(sshkp, in);
+  // ignoring the assignment sk_X = expanded[64:96] as we do not use it in this step key generation
+  // pk_X = X25519(sk_X, X25519_BASE) and pkp = [pk_m pk_x]
+  spkp[MLKEM_PUBLICKEYBYTES:X25519_BYTES] = xwing_x25519_base(spkp[MLKEM_PUBLICKEYBYTES:X25519_BYTES], expanded[XWING_BYTES*2:X25519_BYTES]);
+  
+  // ss_M = ML-KEM-768.Decapsulate(ct_M, sk_M) and in = [ss_m 0 0 0]
+  in[0:MLKEM_SYMBYTES] = __crypto_kem_dec_jazz(in[0:MLKEM_SYMBYTES], sctp[0:MLKEM_CIPHERTEXTBYTES], sskp[0:MLKEM_SECRETKEYBYTES]);
+  
+  // ss_X = X25519(sk_X, ct_X) and in = [ss_m ss_x 0 0]
+  in[MLKEM_SYMBYTES:X25519_BYTES] = xwing_x25519(in[MLKEM_SYMBYTES:X25519_BYTES], expanded[XWING_BYTES*2:X25519_BYTES], sctp[MLKEM_CIPHERTEXTBYTES:X25519_BYTES]);  
+  
+  // in = [ss_m ss_x ct_x 0]
+  in[MLKEM_SYMBYTES + X25519_BYTES:X25519_BYTES] = #copy(sctp[MLKEM_CIPHERTEXTBYTES:X25519_BYTES]);
+  // in = [ss_m ss_x ct_x pk_x]
+  in[MLKEM_SYMBYTES + X25519_BYTES + X25519_BYTES:X25519_BYTES] = #copy(spkp[MLKEM_PUBLICKEYBYTES:X25519_BYTES]);
+  
+  // Combiner(ss_M, ss_X, ct_X, pk_X), so in this case Combiner(in); 
+  sshkp = _sha3_256_A128__A6(sshkp, in);
   
   () = #unspill(shkp);  
   
