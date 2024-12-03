@@ -41,7 +41,10 @@ def Combiner(ss_M, ss_X, ct_X, pk_X):
  */
 fn _sha3_256_A128__A6
 ( #spill_to_mmx reg mut ptr u8[32] out
-, reg const ptr u8[128] in
+, reg const ptr u8[32] ss_mlkem
+, reg const ptr u8[32] ss_x25519
+, reg const ptr u8[32] ct_x25519
+, reg const ptr u8[32] pk_x25519
 ) -> reg ptr u8[32]
 { reg u256[7] st;
   stack u64[25] pst;
@@ -49,7 +52,13 @@ fn _sha3_256_A128__A6
   st = __state_init_avx2();
   pst = __pstate_init_avx2(pst);
   offset = 0;
-  pst, _, st, _ = A128::__pabsorb_array_avx2(pst, 0, st, in, offset, 128, R136, UNFINISHED);
+  pst, _, st, _ = A32::__pabsorb_array_avx2(pst, 0, st, ss_mlkem, offset, 32, R136, UNFINISHED);
+  offset = 0;
+  pst, _, st, _ = A32::__pabsorb_array_avx2(pst, 32, st, ss_x25519, offset, 32, R136, UNFINISHED);
+  offset = 0;
+  pst, _, st, _ = A32::__pabsorb_array_avx2(pst, 64, st, ct_x25519, offset, 32, R136, UNFINISHED);
+  offset = 0;
+  pst, _, st, _ = A32::__pabsorb_array_avx2(pst, 96, st, pk_x25519, offset, 32, R136, UNFINISHED);
   offset = 0;
   pst, _, st, _ = A6::__pabsorb_array_avx2(pst, 128, st, XWING_LABEL, offset, 6, R136, SHA3);
   offset = 0;

@@ -5,7 +5,10 @@ XWING_SRC := code/crypto_kem/xwing/amd64/avx2
 default: jasmin 
 
 jasmin:
-	make -C $(XWING_SRC)/
+	make -C $(XWING_SRC)/ asm
+
+test:
+	make -C $(XWING_SRC)/ test
 
 extract:
 	make -C $(XWING_SRC)/extraction

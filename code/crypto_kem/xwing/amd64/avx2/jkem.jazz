@@ -1,10 +1,10 @@
 require "kem.jinc"
 
 export fn jade_kem_xwing_xwing_amd64_avx2_keypair_derand(
-    #spill_to_mmx reg ptr u8[XWING_EXPANDED_SECRETKEYBYTES] secret_key,
     #spill_to_mmx reg ptr u8[XWING_PUBLICKEYBYTES] public_key,
+    #spill_to_mmx reg ptr u8[XWING_SECRETKEYBYTES] secret_key,
                   reg ptr u8[XWING_SEEDBYTES] coins) 
- -> reg ptr u8[XWING_EXPANDED_SECRETKEYBYTES], reg ptr u8[XWING_PUBLICKEYBYTES], reg u64
+    -> reg ptr u8[XWING_PUBLICKEYBYTES], reg ptr u8[XWING_SECRETKEYBYTES], reg u64
 {
   reg u64 r;
       
@@ -12,67 +12,45 @@ export fn jade_kem_xwing_xwing_amd64_avx2_keypair_derand(
 
   () = #spill(coins);
   
-  secret_key = secret_key;  
-  public_key = public_key;  
-  coins = coins;  
   
-  secret_key, public_key = _crypto_xkem_keypair_derand_jazz(secret_key, public_key, coins);  
   
-  secret_key = secret_key;  
-  public_key = public_key;  
+  public_key, secret_key = _crypto_xkem_keypair_derand_jazz(public_key, secret_key, coins);  
   
   ?{}, r = #set0();
-  return secret_key, public_key, r;
+  return public_key, secret_key, r;
 }
 
 export fn jade_kem_xwing_xwing_amd64_avx2_enc_derand(
     #spill_to_mmx reg ptr u8[XWING_CIPHERTEXTBYTES] ciphertext,
-    #spill_to_mmx reg ptr u8[XWING_BYTES] shared_secret,
-    #spill_to_mmx reg ptr u8[XWING_PUBLICKEYBYTES] public_key,
-    #spill_to_mmx reg ptr u8[XWING_ENC_SEEDBYTES] coins) 
-    -> reg ptr u8[XWING_CIPHERTEXTBYTES], reg ptr u8[XWING_BYTES], reg u64
+    #spill_to_mmx reg ptr u8[XWING_MSGBYTES] shared_secret,
+                  reg ptr u8[XWING_PUBLICKEYBYTES] public_key,
+                  reg ptr u8[XWING_ENC_SEEDBYTES] coins) 
+    -> reg ptr u8[XWING_CIPHERTEXTBYTES], reg ptr u8[XWING_MSGBYTES], reg u64
 {
   reg u64 r;
 
   _ = #init_msf();
 
   () = #spill(public_key, coins);
-  
-  ciphertext = ciphertext;
-  shared_secret = shared_secret;
-  public_key = public_key;
-  coins = coins;
-                                      
   ciphertext, shared_secret =_crypto_xkem_enc_derand_jazz(ciphertext, shared_secret, public_key, coins);
-    
-  ciphertext = ciphertext;
-  shared_secret = shared_secret;
-  
   ?{}, r = #set0();
   return ciphertext, shared_secret, r;
 }
 
 
 export fn jade_kem_xwing_xwing_amd64_avx2_dec(
-    #spill_to_mmx reg ptr u8[XWING_BYTES] shared_secret, 
+    #spill_to_mmx reg ptr u8[XWING_MSGBYTES] shared_secret, 
     reg ptr u8[XWING_CIPHERTEXTBYTES] ciphertext, 
     reg ptr u8[XWING_SECRETKEYBYTES] secret_key) 
-    -> reg ptr u8[XWING_BYTES], reg u64
+    -> reg ptr u8[XWING_MSGBYTES], reg u64
 {
   reg u64 r;
 
   _ = #init_msf();
 
   () = #spill(ciphertext, secret_key);
-  
-  shared_secret = shared_secret;
-  ciphertext = ciphertext;
-  secret_key = secret_key;
-      
   shared_secret = _crypto_xkem_dec_jazz(shared_secret, ciphertext, secret_key);
   
-  shared_secret = shared_secret;
-
   ?{}, r = #set0();
   return shared_secret, r;
 }
