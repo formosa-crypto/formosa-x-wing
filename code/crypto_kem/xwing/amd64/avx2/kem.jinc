@@ -13,7 +13,7 @@ fn _crypto_xkem_keypair_derand_jazz(
 {
   inline int i;
   reg u64 t64;
-  stack u8[MLKEM_SYMBYTES + MLKEM_SYMBYTES + X25519_BYTES] expanded;
+  stack u8[XWING_EXPANDED_SEEDBYTES] expanded;
   stack u8[MLKEM_SYMBYTES + MLKEM_SYMBYTES] expanded_mlkem;
   stack u8[X25519_BYTES] expanded_x25519;
   stack u8[XWING_SECRETKEYBYTES] srandomness;
@@ -106,12 +106,12 @@ fn _crypto_xkem_enc_derand_jazz(
 fn _crypto_xkem_dec_jazz(
   reg ptr u8[XWING_MSGBYTES] shkp,
   reg ptr u8[XWING_CIPHERTEXTBYTES] ctp,
-  reg ptr u8[XWING_SEEDBYTES] randomness) // sk = seed, so call it randomness for clarity of its purpose
+  reg ptr u8[XWING_SECRETKEYBYTES] randomness) // sk = seed, so call it randomness for clarity of its purpose
   -> reg ptr u8[XWING_MSGBYTES]
 {
   inline int i;
   reg u64 t64;
-  stack u8[96] expanded;
+  stack u8[XWING_EXPANDED_SEEDBYTES] expanded;
   stack u8[MLKEM_SYMBYTES + MLKEM_SYMBYTES] expanded_mlkem;
   stack u8[X25519_BYTES] expanded_x25519;
   stack u8[XWING_SEEDBYTES] srandomness;
@@ -159,7 +159,7 @@ fn _crypto_xkem_dec_jazz(
   
   () = #unspill(shkp);  
   
-  for i = 0 to XWING_MSGBYTES/8 { t64 = ss_mlkem[u64 i]; shkp[u64 i] = t64;  }
+  for i = 0 to XWING_MSGBYTES/8 { t64 = ss[u64 i]; shkp[u64 i] = t64;  }
   return shkp;
 }
 
