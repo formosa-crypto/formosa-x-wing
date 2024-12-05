@@ -21,7 +21,7 @@ op SHA3_256_134_32 (x: W8.t Array6.t * W8.t Array32.t * W8.t Array32.t * W8.t Ar
 op SHAKE256_32_96 (x: W8.t Array32.t): W8.t Array96.t =
     Array96.of_list W8.zero (SHAKE256 (to_list x) 96).
 
-abbrev xwing_label = Array6.of_list witness [W8.of_int 92; W8.of_int 46; W8.of_int 47; W8.of_int 47; W8.of_int 94; W8.of_int 92].
+abbrev xwing_label = Array6.of_list W8.zero [W8.of_int 92; W8.of_int 46; W8.of_int 47; W8.of_int 47; W8.of_int 94; W8.of_int 92].
 
 module XWing_Helper_Functions = {
 
@@ -48,7 +48,7 @@ module XWing_Helper_Functions = {
     proc combiner(ss_M : Top.MLKEM.sharedsecret, ss_X : X25519_sharedsecret, ct_X : X25519_ciphertext, pk_X : X25519_publickey) : sharedsecret =
     {
         var ss;
-        ss <- SHA3_256_134_32(xwing_label, ss_M, ss_X, ct_X, pk_X);
+        ss <- SHA3_256_134_32(ss_M, ss_X, ct_X, pk_X, xwing_label);
         return ss;
     }
 }.
