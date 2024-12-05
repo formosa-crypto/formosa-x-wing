@@ -10,8 +10,8 @@ all: ec
 
 ec:
 	jasminc ../jkem.jazz -oec jkem_avx2.ec \
-	  -ec jade_kem_xwing_xwing_amd64_avx2_keypair \
-	  -ec jade_kem_xwing_xwing_amd64_avx2_enc \
+	  -ec jade_kem_xwing_xwing_amd64_avx2_keypair_derand \
+	  -ec jade_kem_xwing_xwing_amd64_avx2_enc_derand \
 	  -ec jade_kem_xwing_xwing_amd64_avx2_dec \
 		$(JINCLUDE_MLKEM) $(JINCLUDE_X25519) \
 		-oecarray Arrays/
