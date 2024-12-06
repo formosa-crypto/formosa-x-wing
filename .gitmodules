@@ -1,10 +1,12 @@
-[submodule "formosa-mlkem"]
-	path = formosa-mlkem
-	url = https://github.com/JoaoDiogoDuarte/formosa-mlkem.git
-	branch = avx2-stack
 [submodule "formosa-25519"]
 	path = formosa-25519
 	url = git@github.com:formosa-crypto/formosa-25519.git
 [submodule "crypto-specs"]
 	path = crypto-specs
 	url = git@github.com:formosa-crypto/crypto-specs.git
+[submodule "formosa-mlkem"]
+	path = formosa-mlkem
+	url = git@github.com:formosa-crypto/formosa-mlkem.git
+[submodule "formosa-keccak"]
+	path = formosa-keccak
+	url = git@github.com:formosa-crypto/formosa-keccak.git

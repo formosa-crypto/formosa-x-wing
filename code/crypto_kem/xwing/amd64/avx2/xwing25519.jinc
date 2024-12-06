@@ -3,23 +3,23 @@ from formosa25519 require "crypto_scalarmult/curve25519/amd64/mulx/curve25519.ji
 fn xwing_x25519_base(#spill_to_mmx reg ptr u8[32] qp, reg ptr u8[32] np) -> reg ptr u8[32]
 {
   reg u64[4] q n;
-  
-  
+
+
   () = #spill(qp);
   n = #copy(np);
 
   q = __curve25519_mulx_base(n); // q = nG
-  
-  () = #unspill(qp);  
+
+  () = #unspill(qp);
   qp = #copy(q);
   return qp;
-  
+
 }
 
 fn xwing_x25519(#spill_to_mmx reg ptr u8[32] qp, reg ptr u8[32] np, reg ptr u8[32] pp) -> reg ptr u8[32]
 {
   reg u64[4] q n p;
-  
+
 
   () = #spill(qp);
   p = #copy(pp);

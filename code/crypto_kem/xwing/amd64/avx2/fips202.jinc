@@ -1,18 +1,18 @@
-from formosamlkem require "keccak/keccak1600_imem_avx2.jinc"
-from formosamlkem require "keccak/keccak1600x4_imem_avx2.jinc"
+from Keccak require "avx2/keccak1600_imem_avx2.jinc"
+from Keccak require "avx2/keccak1600x4_imem_avx2.jinc"
 require "params.jinc"
 
 
 namespace A6 {
   param int ASIZE = 6;
-  from formosamlkem require "keccak/keccak1600_array_avx2_ASIZE.jinc"
-  from formosamlkem require "keccak/keccak1600x4_array_avx2_ASIZE.jinc"
+  from Keccak require "avx2/keccak1600_array_avx2_ASIZE.jinc"
+  from Keccak require "avx2/keccak1600x4_array_avx2_ASIZE.jinc"
 }
 
 namespace A96 {
   param int ASIZE = 96;
-  from formosamlkem require "keccak/keccak1600_array_avx2_ASIZE.jinc"
-  from formosamlkem require "keccak/keccak1600x4_array_avx2_ASIZE.jinc"
+  from Keccak require "avx2/keccak1600_array_avx2_ASIZE.jinc"
+  from Keccak require "avx2/keccak1600x4_array_avx2_ASIZE.jinc"
 }
 
 fn _shake256_A96__A32
