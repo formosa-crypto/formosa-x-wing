@@ -12,4 +12,5 @@ rdirs = formosa-mlkem/code/jasmin/mlkem_avx2_stack/extraction
 rdirs = formosa-25519/proof/
 rdirs = formosa-mlkem/proof/
 rdirs = proof/
+rdirs = spec/
 rdirs = code/crypto_kem/xwing/amd64/avx2
