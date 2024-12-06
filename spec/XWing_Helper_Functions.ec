@@ -15,7 +15,7 @@ type sharedsecret = W8.t Array32.t.
 type ciphertext = Top.MLKEM.ciphertext * X25519_ciphertext.
 type expandedSecretKey = Top.MLKEM.secretkey * X25519_secretkey * Top.MLKEM.publickey * X25519_publickey.
 
-op SHA3_256_134_32 (x: W8.t Array6.t * W8.t Array32.t * W8.t Array32.t * W8.t Array32.t * W8.t Array32.t): W8.t Array32.t =
+op SHA3_256_134_32 (x: W8.t Array32.t * W8.t Array32.t * W8.t Array32.t * W8.t Array32.t * W8.t Array6.t): W8.t Array32.t =
     Array32.of_list W8.zero (SHA3_256 (to_list x.`1 ++ to_list x.`2 ++ to_list x.`3 ++ to_list x.`4 ++ to_list x.`5)).
 
 op SHAKE256_32_96 (x: W8.t Array32.t): W8.t Array96.t =
