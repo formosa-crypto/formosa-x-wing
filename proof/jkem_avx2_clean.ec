@@ -12,44 +12,18 @@ abbrev xWING_LABEL =
 [(W8.of_int 92); (W8.of_int 46); (W8.of_int 47); (W8.of_int 47);
 (W8.of_int 94); (W8.of_int 92)]).
 
-
-module MExtra = {
-    proc _sha3_256_A128__A6(ss: W8.t Array32.t, ss_mlkem: W8.t Array32.t, ss_x25519: W8.t Array32.t, ct_x25519: W8.t Array32.t, pk_x25519:  W8.t Array32.t) : W8.t Array32.t  = {
-
-        var ssr : bool list;
-        var ss1 : bool list;
-        var ss2 : bool list;
-        var ct1 : bool list;
-        var pk1 : bool list;
-        var xl1 : bool list;
-        ss1 <-  flatten (mkseq (fun j => (w2bits ss_mlkem.[j])) 32);
-        ss2 <-  flatten (mkseq (fun j => (w2bits ss_x25519.[j])) 32);
-        ct1 <-  flatten (mkseq (fun j => (w2bits ct_x25519.[j])) 32);
-        pk1 <-  flatten (mkseq (fun j => (w2bits pk_x25519.[j])) 32);
-        xl1 <-  flatten (mkseq (fun j => (w2bits xWING_LABEL.[j])) 6);
-
-        ssr <@ FIPS202_SHA3.Keccak1600.sha3_256(ss1 ++ ss2 ++ ct1 ++ pk1 ++ xl1);
-
-        return Array32.of_list witness (to_list (W32u8.unpack8 (W256.init (fun (i: int) => (nth false ssr i)))));
-        (* there must be an easier way to do this *)
-    }
-
-    proc _shake256_A96__A32(out: W8.t Array96.t, inp: W8.t Array32.t) : W8.t Array96.t  = {
-
-
-        var out1 : bool list;
-        var inp1 : bool list;
-        inp1 <-  flatten (mkseq (fun j => (w2bits inp.[j])) 32);
-
-        out1 <@ FIPS202_SHA3.Keccak1600.shake256(inp1, 96);
-
-        return Array96.of_list witness (to_list (W32u8.unpack8 (W256.init (fun (i: int) => (nth false out1 i)))) ++ to_list (W32u8.unpack8 (W256.init (fun (i: int) => (nth false out1 (256 + i))))) ++ to_list (W32u8.unpack8 (W256.init (fun (i: int) => (nth false out1 (512 + i))))));
-        (* there must be an easier way to do this *)
-    }
-}.
-
 module M = {
 
+  proc _shake256_A96__A32 (out:W8.t Array96.t, in_0:W8.t Array32.t) :
+  W8.t Array96.t = {
+      var trash;
+      return trash;
+  }
+
+   proc _sha3_256_A128__A6 (ss: W8.t Array32.t, ss_m: W8.t Array32.t,  ssx: W8.t Array32.t, ct_x: W8.t Array32.t, pk_x:  W8.t Array32.t) : W8.t Array32.t = {
+      var trash;
+      return trash;
+  }
 
   proc xwing_x25519_base (qp:W8.t Array32.t, np:W8.t Array32.t) : W8.t Array32.t = {
     var n:W64.t Array4.t;
@@ -122,7 +96,7 @@ module M = {
                             )).[i_0])
                 ) i_0))
     );
-    expanded <@ MExtra._shake256_A96__A32 (expanded, srandomness);
+    expanded <@ _shake256_A96__A32 (expanded, srandomness);
     expanded_x25519 <-
     (Array32.init (fun i_0 => expanded.[((32 + 32) + i_0)]));
     pk_x25519 <@ xwing_x25519_base (pk_x25519, expanded_x25519);
@@ -220,7 +194,7 @@ module M = {
     ss_x25519 <@ xwing_x25519 (ss_x25519, ek_x25519, pk_x25519);
     seed_mlkem <- (Array32.init (fun i_0 => seseed.[(0 + i_0)]));
     (ct_mlkem, ss_mlkem) <@ Jkem_avx2_stack.M.__crypto_kem_enc_jazz (ct_mlkem, ss_mlkem, pk_mlkem, seed_mlkem);
-    ss <@ MExtra._sha3_256_A128__A6 (ss, ss_mlkem, ss_x25519, ct_x25519, pk_x25519);
+    ss <@ _sha3_256_A128__A6 (ss, ss_mlkem, ss_x25519, ct_x25519, pk_x25519);
     (* Erased call to unspill *)
     aux <- (((3 * 320) + 128) %/ 8);
     i <- 0;
@@ -310,7 +284,7 @@ module M = {
                             )).[i_0])
                 ) i_0))
     );
-    expanded <@ MExtra._shake256_A96__A32 (expanded, sskp);
+    expanded <@ _shake256_A96__A32 (expanded, sskp);
     expanded_mlkem <- (Array64.init (fun i_0 => expanded.[(0 + i_0)]));
     (pk_mlkem, sk_mlkem) <@ Jkem_avx2_stack.M.__crypto_kem_keypair_jazz (pk_mlkem, sk_mlkem, expanded_mlkem);
     expanded_x25519 <-
@@ -321,7 +295,7 @@ module M = {
     (Array32.init (fun i_0 => sctp.[(((3 * 320) + 128) + i_0)]));
     ss_mlkem <@ Jkem_avx2_stack.M.__crypto_kem_dec_jazz (ss_mlkem, ct_mlkem, sk_mlkem);
     ss_x25519 <@ xwing_x25519 (ss_x25519, expanded_x25519, ct_x25519);
-    ss <@ MExtra._sha3_256_A128__A6 (ss, ss_mlkem, ss_x25519, ct_x25519, pk_x25519);
+    ss <@ _sha3_256_A128__A6 (ss, ss_mlkem, ss_x25519, ct_x25519, pk_x25519);
     (* Erased call to unspill *)
     aux <- (32 %/ 8);
     i <- 0;
