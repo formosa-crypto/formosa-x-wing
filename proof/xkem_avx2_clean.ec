@@ -103,9 +103,8 @@ module M = {
     expanded_mlkem <- (Array64.init (fun i_0 => expanded.[(0 + i_0)]));
     (pk_mlkem, sk_mlkem) <@ Jkem_avx2_stack.M.__crypto_kem_keypair_jazz (pk_mlkem, sk_mlkem, expanded_mlkem);
     (* Erased call to unspill *)
-    aux <- (((3 * 384) + 32) %/ 8);
     i <- 0;
-    while ((i < aux)) {
+    while ((i < 148)) {
       t64 <- (get64 (WArray1184.init8 (fun i_0 => pk_mlkem.[i_0])) i);
       pkp <-
       (Array1216.init
@@ -113,9 +112,9 @@ module M = {
       (WArray1216.set64 (WArray1216.init8 (fun i_0 => pkp.[i_0])) i t64)));
       i <- (i + 1);
     }
-    aux <- (32 %/ 8);
+
     i <- 0;
-    while ((i < aux)) {
+    while ((i < 4)) {
       t64 <- (get64 (WArray32.init8 (fun i_0 => pk_x25519.[i_0])) i);
       pkp <-
       (Array1216.init
@@ -124,9 +123,8 @@ module M = {
       ((((3 * 384) + 32) %/ 8) + i) t64)));
       i <- (i + 1);
     }
-    aux <- (32 %/ 8);
     i <- 0;
-    while ((i < aux)) {
+    while ((i < 4)) {
       t64 <- (get64 (WArray32.init8 (fun i_0 => srandomness.[i_0])) i);
       skp <-
       (Array32.init
@@ -196,9 +194,9 @@ module M = {
     (ct_mlkem, ss_mlkem) <@ Jkem_avx2_stack.M.__crypto_kem_enc_jazz (ct_mlkem, ss_mlkem, pk_mlkem, seed_mlkem);
     ss <@ _sha3_256_A128__A6 (ss, ss_mlkem, ss_x25519, ct_x25519, pk_x25519);
     (* Erased call to unspill *)
-    aux <- (((3 * 320) + 128) %/ 8);
+
     i <- 0;
-    while ((i < aux)) {
+    while ((i < 136)) {
       t64 <- (get64 (WArray1088.init8 (fun i_0 => ct_mlkem.[i_0])) i);
       ctp <-
       (Array1120.init
@@ -206,9 +204,8 @@ module M = {
       (WArray1120.set64 (WArray1120.init8 (fun i_0 => ctp.[i_0])) i t64)));
       i <- (i + 1);
     }
-    aux <- (32 %/ 8);
     i <- 0;
-    while ((i < aux)) {
+    while ((i < 4)) {
       t64 <- (get64 (WArray32.init8 (fun i_0 => ct_x25519.[i_0])) i);
       ctp <-
       (Array1120.init
@@ -217,9 +214,9 @@ module M = {
       ((((3 * 320) + 128) %/ 8) + i) t64)));
       i <- (i + 1);
     }
-    aux <- (32 %/ 8);
+
     i <- 0;
-    while ((i < aux)) {
+    while ((i < 4)) {
       t64 <- (get64 (WArray32.init8 (fun i_0 => ss.[i_0])) i);
       shkp <-
       (Array32.init
@@ -297,9 +294,9 @@ module M = {
     ss_x25519 <@ xwing_x25519 (ss_x25519, expanded_x25519, ct_x25519);
     ss <@ _sha3_256_A128__A6 (ss, ss_mlkem, ss_x25519, ct_x25519, pk_x25519);
     (* Erased call to unspill *)
-    aux <- (32 %/ 8);
+
     i <- 0;
-    while ((i < aux)) {
+    while ((i < 4)) {
       t64 <- (get64 (WArray32.init8 (fun i_0 => ss.[i_0])) i);
       shkp <-
       (Array32.init

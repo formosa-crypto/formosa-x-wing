@@ -10,7 +10,7 @@ JINCLUDE_X25519 := -I formosa25519:../../../../../../formosa-25519/src/
 all: ec
 
 ec:
-	jasminc ../jkem.jazz -oec jkem_avx2.ec \
+	jasminc ../jkem.jazz -oec xkem_avx2.ec \
 	  -ec jade_kem_xwing_xwing_amd64_avx2_keypair_derand \
 	  -ec jade_kem_xwing_xwing_amd64_avx2_enc_derand \
 	  -ec jade_kem_xwing_xwing_amd64_avx2_dec \
