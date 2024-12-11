@@ -3,12 +3,16 @@ timeout = 30
 
 provers = Alt-Ergo@2.4
 provers = CVC4@1.8
-provers = Z3@4.8
+provers = CVC5@1.0.8
+provers = Z3@4.12.5
 
+rdirs = Jasmin:jasmin/eclib
 rdirs = crypto-specs/common
 rdirs = crypto-specs/fips202
 rdirs = crypto-specs/ml-kem
 rdirs = formosa-mlkem/code/jasmin/mlkem_avx2_stack/extraction
+rdirs = formosa-mlkem/code/jasmin/mlkem_avx2/extraction
+rdirs = formosa-mlkem/code/jasmin/mlkem_ref/extraction
 rdirs = formosa-25519/proof/
 rdirs = formosa-mlkem/proof/
 rdirs = proof/

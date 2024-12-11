@@ -10,3 +10,6 @@
 [submodule "formosa-keccak"]
 	path = formosa-keccak
 	url = git@github.com:formosa-crypto/formosa-keccak.git
+[submodule "jasmin"]
+	path = jasmin
+	url = git@github.com:jasmin-lang/jasmin
