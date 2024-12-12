@@ -1,6 +1,6 @@
 // paper: https://eprint.iacr.org/2024/039.pdf
 
-from Kyber require "mlkem_avx2_stack/kem.jinc"
+from Kyber require "mlkem_avx2_stack/jkem.jazz"
 require "params.jinc"
 require "fips202.jinc"
 require "xwing25519.jinc"
@@ -34,7 +34,7 @@ fn _crypto_xkem_keypair_derand_jazz(
 
   // (pk_M, sk_M) = ML-KEM-768.KeyGen_internal(expanded[0:32], expanded[32:64]) and pkp = [pk_m 0]
   expanded_mlkem = expanded[0:MLKEM_SYMBYTES + MLKEM_SYMBYTES];
-  pk_mlkem, sk_mlkem = __crypto_kem_keypair_jazz(pk_mlkem, sk_mlkem, expanded_mlkem);
+  pk_mlkem, sk_mlkem, _ = jade_kem_mlkem_mlkem768_amd64_avx2_keypair_derand(pk_mlkem, sk_mlkem, expanded_mlkem);
 
   () = #unspill(pkp, skp);
 
@@ -86,7 +86,7 @@ fn _crypto_xkem_enc_derand_jazz(
   ss_x25519 = xwing_x25519(ss_x25519, ek_x25519, pk_x25519);
   // (ct_M, ss_M) = ML-KEM-768.EncapsDerand(pk_M, eseed[0:32])
   seed_mlkem = seseed[0:MLKEM_SYMBYTES];
-  ct_mlkem, ss_mlkem =  __crypto_kem_enc_jazz(ct_mlkem, ss_mlkem, pk_mlkem, seed_mlkem);
+  ct_mlkem, ss_mlkem, _ =  jade_kem_mlkem_mlkem768_amd64_avx2_enc_derand(ct_mlkem, ss_mlkem, pk_mlkem, seed_mlkem);
 
   // ss = Combiner(ss_M, ss_X, ct_X, pk_X)
   ss = _sha3_256_A128__A6(ss, ss_mlkem, ss_x25519, ct_x25519, pk_x25519);

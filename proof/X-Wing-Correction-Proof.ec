@@ -98,30 +98,29 @@ qed.
 
 lemma eq_spec_xwing_25519_base_mulx :
    equiv [Xkem_avx2_clean.M.xwing_x25519_base ~ CurveProcedures.scalarmult_base :
-       Array4.of_list W64.zero (to_list (unpack64 k'{2})) = toRep4 np{1}
+      k'{2} =  pack32 (to_list np{1})
        ==>
-       Array32.of_list W8.zero (to_list (unpack8 res{2})) = res{1}
+      res{2} = pack32 (to_list res{1})
    ].
     transitivity
     Mulx_scalarmult_s.M.__curve25519_mulx_base
     (toRep4 np{1} = _k{2} ==> toRep4 res{1} =  res{2})
     (pack4 (to_list _k{1}) = k'{2} ==> pack4 (to_list res{1}) = res{2}) => />.
-    move => &1 &2 H.
-    exists(Array4.of_list W64.zero (to_list (unpack64 k'{2}))).
+    move => &1.
+    exists(toRep4 np{1}).
     do split.
-    + by rewrite -H. by rewrite of_listK.
-    move => &m.
-    rewrite of_listK //=  of_listK //=. rewrite size_to_list //=. rewrite to_listK //=.
+    rewrite of_listK. rewrite size_to_list //=. rewrite to_listK. smt().
+    move => &1. rewrite of_listK. rewrite size_to_list //=. smt().
     proc *. by call xwing_25519_base_mulx_equiv.
     proc *. symmetry. by call eq_spec_impl_scalarmult_base_mulx.
 qed.
 
 lemma eq_spec_xwing_25519_mulx :
    equiv [Xkem_avx2_clean.M.xwing_x25519 ~ CurveProcedures.scalarmult :
-       Array4.of_list W64.zero (to_list (unpack64 k'{2})) = toRep4 np{1} /\
-       Array4.of_list W64.zero (to_list (unpack64 u'{2})) = toRep4 pp{1}
+       k'{2} = pack32 (to_list np{1}) /\
+       u'{2} = pack32 (to_list pp{1})
        ==>
-       Array32.of_list W8.zero (to_list (unpack8 res{2})) = res{1}
+       res{2} = pack32 (to_list res{1})
    ].
     transitivity
     Mulx_scalarmult_s.M.__curve25519_mulx
@@ -131,11 +130,12 @@ lemma eq_spec_xwing_25519_mulx :
      pack4 (to_list _u{1}) = u'{2}
      ==> pack4 (to_list res{1}) = res{2}) => />.
     move => &1 &2 H H0.
-    exists(Array4.of_list W64.zero (to_list (unpack64 k'{2})), Array4.of_list W64.zero (to_list (unpack64 u'{2}))).
+    exists(toRep4 np{1}, toRep4 pp{1}).
     do split.
-    + by rewrite -H. by rewrite -H0. by rewrite //= of_listK. by rewrite //= of_listK.
-    move => &m.
-    rewrite of_listK //=  of_listK //=. rewrite size_to_list //=. rewrite to_listK //=.
+    + rewrite -H. rewrite //= of_listK //=.
+    + rewrite -H0. rewrite //= of_listK //=.
+    move => &1.
+    rewrite of_listK //=  of_listK //=.
     proc *. by call xwing_25519_mulx_equiv.
     proc *. symmetry. by call eq_spec_impl_scalarmult_mulx.
 qed.
@@ -145,19 +145,110 @@ lemma eq_spec_xwing_keygen:
       sk{2} = coins{1}
       ==>
       res{1}.`2 = res{2}.`1 /\
-      res{1}.`1 = Array1216.of_list W8.zero (to_list (res{2}.`2).`1.`1 ++ to_list (res{2}.`2).`1.`2 ++ to_list (res{2}.`2).`2)
+      let pk = res{2}.`2 in
+            let (pk_mlkem, pk_x25519) = pk in
+                let (t, rho) = pk_mlkem in
+                    t = (init (fun (i : int) => res{1}.`1.[i]))%Array1152 /\
+                    rho = (init (fun (i : int) => res{1}.`1.[i + 1152]))%Array32 /\
+                pk_x25519 = (init (fun (i : int) => res{1}.`1.[i + 1184]))%Array32].
+proof.
+  proc => />. smt().
+  inline {2} 1. inline {1} 2. wp.
+  proc rewrite {1} 12 (copy32).
+  while {1} (aux{1} = 4 /\
+      skp{1} = srandomness{1} /\
+      skp{1} = Array32.init (fun i => sk_X0{2}.[i]) /\
+      Array1152.init (fun i => pkp{1}.[i]) = pk_M0{2}.`1 /\
+      Array32.init (fun i => pkp{1}.[i + 1152]) = pk_M0{2}.`2 /\
+      Array32.init (fun i => pkp{1}.[i + 1184]) = (of_list W8.zero ((to_list pk_X_256{2}))%W32u8)%Array32 /\
+       0 <= i{1} <= 4)
+          (4 - i{1}).
+   auto => />. move => &hr H H0 H1 H2 H3 H4.
+   do split.
+   + rewrite tP => i ib. rewrite initiE 1:/#.
+   + rewrite get8_set64_directE /get8 1,2:/# //=.
+   + case:  (8 * i{!hr} <= i && i < 8 * i{!hr} + 8) => *.
+   + rewrite WArray32.get64E pack8bE 1:/# initiE 1:/# /= initiE 1:/# //=.
+   + rewrite /get8 initiE 1:/# initiE 1,2:/#. rewrite initiE 1:/# //=.
+   + rewrite tP => i ib. rewrite initiE 1:/#.
+   + rewrite get8_set64_directE /get8 1,2:/# //=.
+   case:  (8 * i{!hr} <= i && i < 8 * i{!hr} + 8) => *.
+   + rewrite WArray32.get64E pack8bE 1:/# initiE 1:/# /= initiE 1:/# //=.
+   + rewrite /get8 initiE 1:/# initiE 1,2:/#. rewrite initiE 1,2:/# //=.
+   + smt(). smt(). smt().
+   wp.
+   while {1} (aux{1} = 4 /\
+      Array1152.init (fun i => pkp{1}.[i]) = pk_M0{2}.`1 /\
+      Array32.init (fun i => pkp{1}.[i + 1152]) = pk_M0{2}.`2 /\
+      Array32.init (fun i => pkp{1}.[i + 1184]) = pk_x25519{1} /\
+      pk_x25519{1} = (of_list W8.zero ((to_list pk_X_256{2}))%W32u8)%Array32 /\
+      0 <= i{1} <= 4)
+          (4 - i{1}).
+   auto => />. move => &hr H H0 H1 H2 H3 H4.
+   do split.
+   rewrite -H. congr. congr.
+   + rewrite tP => i ib. rewrite initiE 1:/#.
+   + rewrite get8_set64_directE /get8 1,2:/# //=.
+   + case:  (8 * (148 + i{!hr}) <= i && i < 8 * (148 + i{!hr}) + 8) => *.
+   + rewrite WArray32.get64E pack8bE 1:/# initiE 1:/# /= initiE 1:/# //=.
+   + rewrite !initiE 1,2:/# //=. smt(WArray1216.initiE).
 
-  ].
-  proc. inline {2} 1. inline {1} 2. wp.
-  do 3! unroll for{1} ^while. wp.
-  swap{1} 15 2.
+   + rewrite -H0. rewrite tP => i ib.
+   + rewrite!initiE 1:/# //= initiE 1:/#. rewrite  get8_set64_directE 1,2:/#.
+   + rewrite ifF 1:/#. rewrite /get8 /init8. smt(WArray1216.initiE).
+
+   + rewrite tP => i ib. rewrite !initiE 1:/# //=.
+   + rewrite !initiE 1:/# //=.
+   + rewrite get8_set64_directE /get8 1,2:/# //=.
+   + case: (8 * (148 + i{!hr}) <= i + 1184 && i + 1184 < 8 * (148 + i{!hr}) + 8) => *.
+   + rewrite WArray32.get64E pack8bE 1:/# initiE 1:/# /= initiE 1:/# //= initiE 1:/# //=.
+   + smt(). smt(WArray1216.initiE). smt(). smt(). smt().
+
+  wp.
+  while {1} (aux{1} = 4 /\
+      Array1152.init (fun i => pkp{1}.[i]) = pk_M0{2}.`1 /\
+      Array32.init (fun i => pkp{1}.[i + 1152]) = pk_M0{2}.`2 /\
+      Array32.init (fun i => pkp{1}.[i + 1184]) = pk_x25519{1} /\
+      Array1152.init (fun i => pk_mlkem{1}.[i]) = pk_M0{2}.`1 /\
+      Array32.init (fun i => pk_mlkem{1}.[i]) = pk_M0{2}.`2 /\
+      Array1184.init (fun i => pkp{1}.[i]) = pk_mlkem{1} /\
+      0 <= i{1} <= 4)
+          (4 - i{1}).
+   auto => />. move => &hr H H0 H1 H2 H3 H4 H5.
+   do split.
+   rewrite -H. congr. congr.
+   + rewrite tP => i ib. rewrite initiE 1:/#.
+   + rewrite get8_set64_directE /get8 1,2:/# //=.
+   + case:  (8 * i{!hr} <= i && i < 8 * i{!hr} + 8) => *.
+   + rewrite get64E pack8bE 1:/# initiE 1:/# /= initiE 1:/# //= initiE 1,2:/# //= .
+   + smt(WArray1216.initiE).
+
+   + rewrite -H0. rewrite tP => i ib.
+   + rewrite!initiE 1:/# //= initiE 1:/#. rewrite  get8_set64_directE 1,2:/#.
+   + rewrite ifF 1:/#. rewrite /get8 /init8. smt(WArray1216.initiE).
+
+   + rewrite tP => i ib. rewrite !initiE 1:/# //=.
+   + rewrite !initiE 1:/# //=.
+   + rewrite get8_set64_directE /get8 1,2:/# //=.
+   case: (8 * i{!hr} <= i + 1184 && i + 1184 < 8 * i{!hr} + 8) => *.
+   + rewrite get64E pack8bE 1:/# initiE 1:/# /= initiE 1:/# //= initiE 1:/# //=.
+   + smt(). smt(WArray1216.initiE).
+
+   + rewrite tP => i ib. rewrite initiE 1:/#. rewrite initE.
+   case (0 <= i && i < 1216) => *.
+   + rewrite get8_set64_directE /get8 1,2:/# //=.
+   case: (8 * i{!hr} <= i && i  < 8 * i{!hr} + 8) => *.
+   + rewrite get64E pack8bE 1:/# initiE 1:/# /= initiE 1:/# //= initiE 1:/# //= initiE 1:/# //=.
+   + smt(). rewrite /init8. rewrite initiE 1:/# initiE 1:/# //=.
+   + rewrite initiE. smt(). smt(). smt(). smt(). smt().
+
+  wp.
+
+  call mlkem_kem_correct_kg; wp.
   call eq_spec_xwing_25519_base_mulx; wp.
-  call mlkem_kem_correct_internal_kg; wp.
   ecall{1} (shake256_A96_A32 expanded{1} srandomness{1}); wp.
-  skip; auto => />. move => &1.
-  do split.
-  admit. (* this needs to change in the jasmin extraction, provable but takes forever. *)
-  admit. (* this needs to change in the jasmin extraction, provable but takes forever. *)
-  move => *.
-  admit. (* this needs to change in the jasmin extraction, too big to be provable imo. *)
+  skip => />. move => &1. do split.
+  + rewrite tP => i ib. rewrite !initiE 1..6:/# //=.
+  + rewrite tP => i ib. rewrite !initiE 1..2:/# //= !initiE 1..4:/#.
+  move => H H0 H1 H2.
 qed.

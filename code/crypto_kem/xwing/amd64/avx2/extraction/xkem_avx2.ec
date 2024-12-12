@@ -6,10 +6,10 @@ import SLH64.
 
 require import
 Array1 Array2 Array4 Array5 Array6 Array7 Array8 Array16 Array24 Array25
-Array32 Array33 Array64 Array96 Array128 Array140 Array144 Array152 Array256
-Array300 Array384 Array400 Array536 Array768 Array960 Array1024 Array1088
-Array1120 Array1152 Array1184 Array1216 Array2048 Array2144 Array2304
-Array2400.
+Array32 Array33 Array64 Array96 Array128 Array140 Array144 Array148 Array152
+Array256 Array300 Array384 Array400 Array536 Array768 Array960 Array1024
+Array1088 Array1120 Array1152 Array1184 Array1216 Array2048 Array2144
+Array2304 Array2400.
 
 require import
 WArray1 WArray2 WArray4 WArray6 WArray8 WArray16 WArray32 WArray33 WArray64
@@ -9962,6 +9962,80 @@ module M = {
     shk <@ __cmov (shk, (Array32.init (fun i_0 => kr.[(0 + i_0)])), cnd);
     return shk;
   }
+  proc jade_kem_mlkem_mlkem768_amd64_avx2_keypair_derand (public_key:W8.t Array1184.t,
+                                                          secret_key:W8.t Array2400.t,
+                                                          coins:W8.t Array64.t) : 
+  W8.t Array1184.t * W8.t Array2400.t * W64.t = {
+    var r:W64.t;
+    var rd:W8.t Array64.t;
+    var pk:W8.t Array1184.t;
+    var pkp:W8.t Array1184.t;
+    var sk:W8.t Array2400.t;
+    var skp:W8.t Array2400.t;
+    var rdp:W8.t Array64.t;
+    var _of_:bool;
+    var _cf_:bool;
+    var _sf_:bool;
+    var _zf_:bool;
+    var  _0:W64.t;
+    var  _1:bool;
+    pk <- witness;
+    pkp <- witness;
+    rd <- witness;
+    rdp <- witness;
+    sk <- witness;
+    skp <- witness;
+     _0 <- (init_msf);
+    (* Erased call to spill *)
+    (* Erased call to spill *)
+    rd <-
+    (Array64.init
+    (fun i => (get8
+              (WArray64.init64
+              (fun i => (copy_64
+                        (Array8.init
+                        (fun i => (get64
+                                  (WArray64.init8 (fun i => coins.[i])) 
+                                  i))
+                        )).[i])
+              ) i))
+    );
+    pkp <- pk;
+    skp <- sk;
+    rdp <- rd;
+    (pkp, skp) <@ __crypto_kem_keypair_jazz (pkp, skp, rdp);
+    (* Erased call to unspill *)
+    (* Erased call to unspill *)
+    pk <- pkp;
+    sk <- skp;
+    rd <- rdp;
+    public_key <-
+    (Array1184.init
+    (fun i => (get8
+              (WArray1184.init64
+              (fun i => (copy_64
+                        (Array148.init
+                        (fun i => (get64 (WArray1184.init8 (fun i => pk.[i]))
+                                  i))
+                        )).[i])
+              ) i))
+    );
+    secret_key <-
+    (Array2400.init
+    (fun i => (get8
+              (WArray2400.init64
+              (fun i => (copy_64
+                        (Array300.init
+                        (fun i => (get64 (WArray2400.init8 (fun i => sk.[i]))
+                                  i))
+                        )).[i])
+              ) i))
+    );
+    (* Erased call to spill *)
+    (* Erased call to spill *)
+    (_of_, _cf_, _sf_,  _1, _zf_, r) <- (set0_64);
+    return (public_key, secret_key, r);
+  }
   proc a6____aread_subu64 (buf:W8.t Array6.t, offset:W64.t, dELTA:int,
                            lEN:int, tRAIL:int) : int * int * int * W64.t = {
     var w:W64.t;
@@ -11976,6 +12050,7 @@ module M = {
     var sk_mlkem:W8.t Array2400.t;
     var i:int;
     var t64:W64.t;
+    var  _0:W64.t;
     expanded <- witness;
     expanded_mlkem <- witness;
     expanded_x25519 <- witness;
@@ -12002,8 +12077,8 @@ module M = {
     (Array32.init (fun i_0 => expanded.[((32 + 32) + i_0)]));
     pk_x25519 <@ xwing_x25519_base (pk_x25519, expanded_x25519);
     expanded_mlkem <- (Array64.init (fun i_0 => expanded.[(0 + i_0)]));
-    (pk_mlkem, sk_mlkem) <@ __crypto_kem_keypair_jazz (pk_mlkem, sk_mlkem,
-    expanded_mlkem);
+    (pk_mlkem, sk_mlkem,  _0) <@ jade_kem_mlkem_mlkem768_amd64_avx2_keypair_derand (
+    pk_mlkem, sk_mlkem, expanded_mlkem);
     (* Erased call to unspill *)
     aux <- (((3 * 384) + 32) %/ 8);
     i <- 0;

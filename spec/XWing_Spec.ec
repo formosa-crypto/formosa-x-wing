@@ -12,6 +12,7 @@ module XWing = {
 
         (sk_M, sk_X, pk_M, pk_X) <@ XWing_Helper_Functions.expandDecapsulationKey(sk);
         pk <- (pk_M, pk_X);
+        sk <- sk;
 
         return (sk, pk);
   }

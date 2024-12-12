@@ -34,12 +34,13 @@ module XWing_Helper_Functions = {
         coins2 <- Array32.init (fun (i: int) => expanded.[32 + i]);
         coins3 <- Array32.init (fun (i: int) => expanded.[64 + i]);
 
-        (pk_M, sk_M) <@ MLKEM.kg_derand(coins1, coins2);
+
 
         sk_X <- coins3;
         pk_X_256 <@ CurveProcedures.scalarmult_base(W32u8.pack32 (to_list sk_X));
         pk_X <- Array32.of_list W8.zero (W32u8.to_list pk_X_256);
 
+       (pk_M, sk_M) <@ MLKEM.kg_derand(coins1, coins2);
         k <- (sk_M, sk_X, pk_M, pk_X);
         return k;
     }
