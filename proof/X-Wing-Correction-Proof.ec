@@ -142,7 +142,7 @@ qed.
 
 lemma eq_spec_xwing_keygen:
   equiv [Xkem_avx2_clean.M.jade_kem_xwing_xwing_amd64_avx2_keypair_derand ~ XWing.kg_derand :
-      sk{2} = coins{1}
+      sk{2} = coins{1} (** in the rfc, the derand version uses sk to denote the coins **)
       ==>
       res{1}.`2 = res{2}.`1 /\
       let pk = res{2}.`2 in
@@ -247,8 +247,25 @@ proof.
   call mlkem_kem_correct_kg; wp.
   call eq_spec_xwing_25519_base_mulx; wp.
   ecall{1} (shake256_A96_A32 expanded{1} srandomness{1}); wp.
-  skip => />. move => &1. do split.
+  (** post conditions look good until now **)
+  skip => />.
+  (** uh oh, why is it now asking me to prove:
+
+  forall (result_L0 : W8.t Array1184.t * W8.t Array2400.t * W64.t)
+  (result_R0 : publickey * secretkey)
+  ! (let (pk, sk) = result_R0 in
+     let (t, rho) = pk in
+     sk.`1 = (init ("_.[_]" result_L0.`2))%Array1152 /\
+     sk.`2.`1 = (init (fun (i0 : int) => result_L0.`2.[i0 + 1152]))%Array1152 /\
+     sk.`2.`2 = (init (fun (i0 : int) => result_L0.`2.[i0 + 2304]))%Array32 /\
+     sk.`3 = (init (fun (i0 : int) => result_L0.`2.[i0 + 2336]))%Array32 /\
+     sk.`4 = (init (fun (i0 : int) => result_L0.`2.[i0 + 2368]))%Array32 /\
+     t = (init ("_.[_]" result_L0.`1))%Array1152 /\
+     rho = (init (fun (i0 : int) => result_L0.`1.[i0 + 1152]))%Array32)
+  **)
+  move => &1. do split.
   + rewrite tP => i ib. rewrite !initiE 1..6:/# //=.
   + rewrite tP => i ib. rewrite !initiE 1..2:/# //= !initiE 1..4:/#.
   move => H H0 H1 H2.
+  (** unable to prove because as far as I can tell, this is false! Is implementation wrong? **)
 qed.
