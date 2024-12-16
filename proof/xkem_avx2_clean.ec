@@ -154,6 +154,7 @@ module M = {
     var ss:W8.t Array32.t;
     var i:int;
     var t64:W64.t;
+    var  _0:W64.t;
     ct_mlkem <- witness;
     ct_x25519 <- witness;
     ek_x25519 <- witness;
@@ -196,7 +197,7 @@ module M = {
     ct_x25519 <@ xwing_x25519_base (ct_x25519, ek_x25519);
     ss_x25519 <@ xwing_x25519 (ss_x25519, ek_x25519, pk_x25519);
     seed_mlkem <- (Array32.init (fun i_0 => seseed.[(0 + i_0)]));
-    (ct_mlkem, ss_mlkem) <@ Jkem_avx2_stack.M.__crypto_kem_enc_jazz (ct_mlkem, ss_mlkem, pk_mlkem, seed_mlkem);
+    (ct_mlkem, ss_mlkem,  _0) <@ Jkem_avx2_stack.M.jade_kem_mlkem_mlkem768_amd64_avx2_enc_derand (ct_mlkem, ss_mlkem, pk_mlkem, seed_mlkem);
     ss <@ _sha3_256_A128__A6 (ss, ss_mlkem, ss_x25519, ct_x25519, pk_x25519);
     (* Erased call to unspill *)
 
