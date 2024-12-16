@@ -1,9 +1,11 @@
 require import AllCore IntDiv CoreMap List Distr IntDiv StdOrder.
 
-from Jasmin require import JModel_x86 JWord JUtils.
+from Jasmin require import JModel_x86 JModel JWord JUtils.
+
+
 
 import SLH64 StdOrder.IntOrder.
-require import Xkem_avx2_clean XWing_Spec XWing_Helper_Functions CorrectnessProof_Mulx Mulx_scalarmult_s Jkem_avx2_stack FIPS202_SHA3 Curve25519_Procedures MLKEM MLKEM_KEM_avx2_stack.
+require import Xkem_avx2_clean  XWing_Spec XWing_Helper_Functions CorrectnessProof_Mulx Mulx_scalarmult_s Jkem_avx2_stack FIPS202_SHA3 Curve25519_Procedures MLKEM MLKEM_KEM_avx2_stack Symmetric.
 require import Array4 Array6 Array8 Array32 Array64 Array96 Array140 Array152 Array1088 Array1120 Array1184 Array1216 Array2400 Array1152.
 require import WArray4 WArray6 WArray32 WArray64 WArray96 WArray1088 WArray1120 WArray1184 WArray1216 WArray2400.
 
@@ -141,131 +143,177 @@ lemma eq_spec_xwing_25519_mulx :
 qed.
 
 lemma eq_spec_xwing_keygen:
-  equiv [Xkem_avx2_clean.M.jade_kem_xwing_xwing_amd64_avx2_keypair_derand ~ XWing.kg_derand :
-      sk{2} = coins{1} (** in the rfc, the derand version uses sk to denote the coins **)
+  equiv [Xkem_avx2_clean.M._crypto_xkem_keypair_derand_jazz ~ XWing.kg_derand :
+      sk{2} = randomness{1} (** in the rfc, the derand version uses sk to denote the coins **)
       ==>
-      res{1}.`2 = res{2}.`1 /\
-      let pk = res{2}.`2 in
-            let (pk_mlkem, pk_x25519) = pk in
-                let (t, rho) = pk_mlkem in
-                    t = (init (fun (i : int) => res{1}.`1.[i]))%Array1152 /\
-                    rho = (init (fun (i : int) => res{1}.`1.[i + 1152]))%Array32 /\
-                pk_x25519 = (init (fun (i : int) => res{1}.`1.[i + 1184]))%Array32].
+         res{2}.`1 = Array32.init(fun i => res{1}.`2.[i])  /\
+         res{2}.`2.`1.`1 = Array1152.init(fun i => res{1}.`1.[i]) /\
+         res{2}.`2.`1.`2 = Array32.init(fun i => res{1}.`1.[i+1152]) /\
+         res{2}.`2.`2 = Array32.init(fun i => res{1}.`1.[i+1184])].
 proof.
-  proc => />. smt().
-  inline {2} 1. inline {1} 2. wp.
-  proc rewrite {1} 12 (copy32).
-  while {1} (aux{1} = 4 /\
-      skp{1} = srandomness{1} /\
-      skp{1} = Array32.init (fun i => sk_X0{2}.[i]) /\
-      Array1152.init (fun i => pkp{1}.[i]) = pk_M0{2}.`1 /\
-      Array32.init (fun i => pkp{1}.[i + 1152]) = pk_M0{2}.`2 /\
-      Array32.init (fun i => pkp{1}.[i + 1184]) = (of_list W8.zero ((to_list pk_X_256{2}))%W32u8)%Array32 /\
-       0 <= i{1} <= 4)
-          (4 - i{1}).
-   auto => />. move => &hr H H0 H1 H2 H3 H4.
-   do split.
-   + rewrite tP => i ib. rewrite initiE 1:/#.
-   + rewrite get8_set64_directE /get8 1,2:/# //=.
-   + case:  (8 * i{!hr} <= i && i < 8 * i{!hr} + 8) => *.
-   + rewrite WArray32.get64E pack8bE 1:/# initiE 1:/# /= initiE 1:/# //=.
-   + rewrite /get8 initiE 1:/# initiE 1,2:/#. rewrite initiE 1:/# //=.
-   + rewrite tP => i ib. rewrite initiE 1:/#.
-   + rewrite get8_set64_directE /get8 1,2:/# //=.
-   case:  (8 * i{!hr} <= i && i < 8 * i{!hr} + 8) => *.
-   + rewrite WArray32.get64E pack8bE 1:/# initiE 1:/# /= initiE 1:/# //=.
-   + rewrite /get8 initiE 1:/# initiE 1,2:/#. rewrite initiE 1,2:/# //=.
-   + smt(). smt(). smt().
+  proc => />.
+  proc rewrite {1} 8 (copy32). inline {2} 1. auto => />.
+  seq 9 2 : (#pre /\ expanded{1} = SHAKE256_32_96 randomness{1}
+                  /\ randomness{1} = srandomness{1}
+                  /\ ={expanded}
+                  /\ srandomness{1} = sk0{2}
+                  /\ srandomness{1} = sk{2}).
+  + ecall {1} (shake256_A96_A32 expanded{1} srandomness{1}); wp; skip => />.
+
+  swap{1} 2 1. swap{2} 3 -2.
+  seq 1 1 : (#pre /\ coins3{2} = expanded_x25519{1}
+                  /\ coins3{2} = Array32.init(fun (i : int) => expanded{1}.[i + 64])
+                  /\ coins3{2} = Array32.init(fun (i : int) => expanded{2}.[i + 64])).
+  + auto => />. move => &1. smt(). auto => />.
+
+  seq 1 2 : (#pre /\ coins1{2} = Array32.init (fun (i : int ) => expanded_mlkem{1}.[i])
+                  /\ coins2{2} = Array32.init (fun (i : int ) => expanded_mlkem{1}.[32 + i])
+                  /\ coins1{2} = Array32.init (fun (i : int ) => expanded{1}.[i])
+                  /\ coins2{2} = Array32.init (fun (i : int ) => expanded{1}.[32 + i])
+                  /\ coins1{2} = Array32.init (fun (i : int ) => expanded{2}.[i])
+                  /\ coins2{2} = Array32.init (fun (i : int ) => expanded{2}.[32+i])).
+  + auto => />. move => &1. do split.  rewrite tP => i ib. rewrite !initiE 1..5:/# //=.
+  + rewrite tP => i ib. rewrite !initiE 1..2:/# //= !initiE 1..3:/# //=.
+
+  auto => />.
+  seq 0 1 : (#pre /\ expanded_x25519{1} = sk_X0{2}
+                  /\ sk_X0{2} = coins3{2}).
+  + auto => />.
+
+  seq 1 1 : (#pre /\ pack32 (to_list pk_x25519{1}) = pk_X_256{2}).
+  + call eq_spec_xwing_25519_base_mulx. auto => />.
+
+  seq 0 1 : (#pre /\ pk_x25519{1} = pk_X0{2}
+                  /\ pk_x25519{1} = Array32.of_list W8.zero (W32u8.to_list pk_X_256{2})). auto => />.
+  + move => &1 &2 [#] *. rewrite !tP. do split.
+  + move => i ib. rewrite !/to_list !/mkseq -!iotaredE => />. rewrite !/of_list initiE 1:/# //=. smt().
+  + move => i ib. rewrite !/to_list !/mkseq -!iotaredE => />. rewrite !/of_list initiE 1:/# //=. smt().
+
+  seq 1 1 : (#pre /\ pk_M0{2}.`1 = (init (fun (i : int) =>  pk_mlkem{1}.[i]))%Array1152
+                  /\ pk_M0{2}.`2 = (init (fun (i : int) =>  pk_mlkem{1}.[i + 1152]))%Array32
+                  /\ let (t,rho) = pk_M0{2} in
+                     sk_M0{2}.`1 = Array1152.init(fun i => sk_mlkem{1}.[i])
+                  /\ sk_M0{2}.`2.`1 = Array1152.init(fun i => sk_mlkem{1}.[i+1152])
+                  /\ sk_M0{2}.`2.`2 = Array32.init(fun i => sk_mlkem{1}.[i+1152+1152])
+                  /\ sk_M0{2}.`3 = Array32.init(fun i => sk_mlkem{1}.[i+1152+1152 + 32])
+                  /\ sk_M0{2}.`4 = Array32.init(fun i => sk_mlkem{1}.[i+1152+1152 + 32 + 32])
+                  /\ t = Array1152.init(fun i => pk_mlkem{1}.[i])
+                  /\ rho = Array32.init(fun i => pk_mlkem{1}.[i+1152])).
+  + call mlkem_kem_correct_kg. auto => />. smt(). auto => />.
+
+  seq 9 0 : (#pre /\ sk0{2} = (init ("_.[_]" skp{1}))%Array32
+                  /\ pk_M0{2}.`1 = (init ("_.[_]" pkp{1}))%Array1152
+                  /\ pk_M0{2}.`2 = (init (fun (i0 : int) => pkp{1}.[i0 + 1152]))%Array32
+                  /\ pk_X0{2} = (init (fun (i0 : int) => pkp{1}.[i0 + 1184]))%Array32).
+
+  seq 3 0 : (#pre /\ pk_M0{2}.`1 = (init (fun (i : int) =>  pk_mlkem{1}.[i]))%Array1152
+                  /\ pk_M0{2}.`2 = (init (fun (i : int) =>  pk_mlkem{1}.[i + 1152]))%Array32
+                  /\ pk_M0{2}.`1 = (init (fun (i : int) =>  pkp{1}.[i]))%Array1152
+                  /\ pk_M0{2}.`2 = (init (fun (i : int) =>  pkp{1}.[i + 1152]))%Array32).
+
+  + while{1} ( #pre /\ aux{1} = 148
+                   /\ 0 <= i{1} <= aux{1}
+                   /\ pk_X0{2} = pk_x25519{1}
+                   /\ pk_M0{2}.`1 = (init (fun (i : int) =>  pk_mlkem{1}.[i]))%Array1152
+                   /\ pk_M0{2}.`2 = (init (fun (i : int) =>  pk_mlkem{1}.[i + 1152]))%Array32
+                   /\ (forall k, 0<=k<min (8 * i{1}) 1184 => pkp{1}.[k] = pk_mlkem{1}.[k])
+                   /\ (forall k, 0<=k<min (8 * i{1}) 1152 => pkp{1}.[k] = pk_M0{2}.`1.[k])
+                   /\ (forall k, 1152<=k<min (8 * i{1}) 1184 => pkp{1}.[k] = pk_M0{2}.`2.[k-1152]))
+              (148 - i{1}).
+   + auto => />. move => &hr Z. rewrite !tP. move => H H0 H1 H2 H3 H4 H5 H6 H7 H8 H9. do split.
+   + smt(). smt(). move => i ib *. rewrite !initE.
+   + case(0 <= i && i < 1184) => *. rewrite ifT 1:/#.
+   + rewrite get8_set64_directE 1,2:/#. case (8 * i{!hr} <= i && i < 8 * i{!hr} + 8) => *.
+   + rewrite get64E /get8 /init8 !pack8bE 1:/# !initiE 1:/# //= !initiE 1:/# /#.
+   + rewrite /get8 /init8 !initiE 1:/#. smt(). smt().
+   + move => i ib *.
+   + case(0 <= i && i < 1152) => *. rewrite H1. smt().
+   + rewrite !initiE 1,2:/#.
+   + rewrite get8_set64_directE 1,2:/#. case (8 * i{!hr} <= i && i < 8 * i{!hr} + 8) => *.
+   + rewrite get64E /get8 /init8 !pack8bE 1:/# !initiE 1:/# //= !initiE 1:/# /#.
+   + rewrite /get8 /init8 !initiE 1:/#. smt(). rewrite !initiE 1,2:/#.
+   + move => i ib *.
+   + rewrite !initiE 1:/#.
+   + rewrite get8_set64_directE 1,2:/#. case (8 * i{!hr} <= i && i < 8 * i{!hr} + 8) => *.
+   + rewrite get64E /get8 /init8 !pack8bE 1:/# !initiE 1:/# //= !initiE 1:/# H2 1:/# !initiE 1:/# //= /#.
+   + rewrite /get8 /init8 !initiE 1:/#. smt(). smt().
+
+   + wp. auto => />.
+   + move => &1 &2 [#] H H0 H1 H2 H3 H4. auto => />. do split.
+   + smt(). smt(). smt(). move => ??. do split.
+   + move => H5 H6 H7 H8 H9 H10. smt(). move => H11 H12 H13 H14 H15 H16. rewrite tP. do split.
+   + move => H17 H18. rewrite -H15 1:/#. smt(Array1152.initiE).
+   + rewrite H3. rewrite tP => i ib. rewrite !initiE 1,2:/# //= -H14 1,2:/#.
+
+   seq 3 0 : (#pre /\ pk_X0{2} = (init (fun (i0 : int) => pkp{1}.[i0 + 1184]))%Array32
+                   /\ pk_x25519{1} = (init (fun (i0 : int) => pkp{1}.[i0 + 1184]))%Array32
+                   /\ pk_X0{2} = pk_x25519{1}).
    wp.
-   while {1} (aux{1} = 4 /\
-      Array1152.init (fun i => pkp{1}.[i]) = pk_M0{2}.`1 /\
-      Array32.init (fun i => pkp{1}.[i + 1152]) = pk_M0{2}.`2 /\
-      Array32.init (fun i => pkp{1}.[i + 1184]) = pk_x25519{1} /\
-      pk_x25519{1} = (of_list W8.zero ((to_list pk_X_256{2}))%W32u8)%Array32 /\
-      0 <= i{1} <= 4)
-          (4 - i{1}).
-   auto => />. move => &hr H H0 H1 H2 H3 H4.
-   do split.
-   rewrite -H. congr. congr.
-   + rewrite tP => i ib. rewrite initiE 1:/#.
-   + rewrite get8_set64_directE /get8 1,2:/# //=.
-   + case:  (8 * (148 + i{!hr}) <= i && i < 8 * (148 + i{!hr}) + 8) => *.
-   + rewrite WArray32.get64E pack8bE 1:/# initiE 1:/# /= initiE 1:/# //=.
-   + rewrite !initiE 1,2:/# //=. smt(WArray1216.initiE).
+   while{1} (#pre /\ aux{1} = 4
+                  /\ 0 <= i{1} <= aux{1}
+                  /\ pk_X0{2} = pk_x25519{1}
+                  /\ (forall k, 0<=k<min (8 * i{1}) 32 => pkp{1}.[k+1184] = pk_x25519{1}.[k])
+                  /\ (forall k, 0<=k<min (8 * i{1}) 32 => pkp{1}.[k+1184] = pk_X0{2}.[k])
+                  /\ (forall k, 1184<=k<min (8 * i{1}) 1216 => pkp{1}.[k] = pk_x25519{1}.[k-1216])
+                  /\ (forall k, 1184<=k<min (8 * i{1}) 1216 => pkp{1}.[k] = pk_X0{2}.[k-1216]))
+              (4 - i{1}).
 
-   + rewrite -H0. rewrite tP => i ib.
-   + rewrite!initiE 1:/# //= initiE 1:/#. rewrite  get8_set64_directE 1,2:/#.
-   + rewrite ifF 1:/#. rewrite /get8 /init8. smt(WArray1216.initiE).
+   + auto => />. move => &hr Z. rewrite !tP. move => H H0 H1 H2 H3 H4 H5 H6 H7 H8 H9 H10. do split.
+   + move => i ib. rewrite !initiE 1,2:/# /=.
+   + rewrite get8_set64_directE 1,2:/# ifF 1:/#.
+   + rewrite /get8 /init8 !initiE 1:/# H4 1:/#. smt(Array1152.initiE).
+   + move => i ib. rewrite !initiE 1:/# /= !initiE 1:/#.
+   + rewrite get8_set64_directE 1,2:/# ifF 1:/#.
+   + rewrite /get8 /init8 !initiE 1:/# H5 1:/#. smt(Array32.initiE).
+   smt(). smt().
+   + move => k0 i ib. rewrite !initiE 1:/# /=.
+   + rewrite get8_set64_directE 1,2:/#.
+   + case (8 * (148 + i{!hr}) <= k0 + 1184 && k0 + 1184 < 8 * (148 + i{!hr}) + 8) => *.
+   + rewrite get64E /get8 /init8 !pack8bE 1:/# !initiE 1:/# //= !initiE 1:/# /# //=.
+   + rewrite /get8 /init8 !initiE 1:/# H8 1:/# /#.
+   + move => k0 i ib. rewrite !initiE 1:/# /=.
+   + rewrite get8_set64_directE 1,2:/#.
+   + case (8 * (148 + i{!hr}) <= k0 + 1184 && k0 + 1184 < 8 * (148 + i{!hr}) + 8) => *.
+   + rewrite get64E /get8 /init8 !pack8bE 1:/# !initiE 1:/# //= !initiE 1:/# /# //=.
+   + rewrite /get8 /init8 !initiE 1:/# H8 1:/# /#.
+   + move => k0 i ib. rewrite !initiE 1:/# /=.
+   + rewrite get8_set64_directE 1,2:/#. rewrite ifF 1:/#.
+   + rewrite /get8 /init8 !initiE 1:/# H9 1:/# /#.
+   + move => k0 i ib. rewrite !initiE 1:/# /=.
+   + rewrite get8_set64_directE 1,2:/#. rewrite ifF 1:/#.
+   + rewrite /get8 /init8 !initiE 1:/# H9 1:/# /#. smt().
 
-   + rewrite tP => i ib. rewrite !initiE 1:/# //=.
-   + rewrite !initiE 1:/# //=.
-   + rewrite get8_set64_directE /get8 1,2:/# //=.
-   + case: (8 * (148 + i{!hr}) <= i + 1184 && i + 1184 < 8 * (148 + i{!hr}) + 8) => *.
-   + rewrite WArray32.get64E pack8bE 1:/# initiE 1:/# /= initiE 1:/# //= initiE 1:/# //=.
-   + smt(). smt(WArray1216.initiE). smt(). smt(). smt().
+   + wp. auto => />. rewrite !tP. move => &1 &2 [#] H H0 H1 H2 H3 H4 H5 H6. do split.
+   + smt(). smt(). smt(). smt().
+   + move => H7 H8. do split. move => H9 H10 H11 H12 H13 H14. smt().
+   + move => H15 H16 H17 H18 H19 H20 H21. rewrite tP. do split.
+   + move => i ib. rewrite !initiE 1:/# //=. smt().
+   + move => i ib. rewrite !initiE 1:/# //=. smt().
 
-  wp.
-  while {1} (aux{1} = 4 /\
-      Array1152.init (fun i => pkp{1}.[i]) = pk_M0{2}.`1 /\
-      Array32.init (fun i => pkp{1}.[i + 1152]) = pk_M0{2}.`2 /\
-      Array32.init (fun i => pkp{1}.[i + 1184]) = pk_x25519{1} /\
-      Array1152.init (fun i => pk_mlkem{1}.[i]) = pk_M0{2}.`1 /\
-      Array32.init (fun i => pk_mlkem{1}.[i]) = pk_M0{2}.`2 /\
-      Array1184.init (fun i => pkp{1}.[i]) = pk_mlkem{1} /\
-      0 <= i{1} <= 4)
-          (4 - i{1}).
-   auto => />. move => &hr H H0 H1 H2 H3 H4 H5.
-   do split.
-   rewrite -H. congr. congr.
-   + rewrite tP => i ib. rewrite initiE 1:/#.
-   + rewrite get8_set64_directE /get8 1,2:/# //=.
-   + case:  (8 * i{!hr} <= i && i < 8 * i{!hr} + 8) => *.
-   + rewrite get64E pack8bE 1:/# initiE 1:/# /= initiE 1:/# //= initiE 1,2:/# //= .
-   + smt(WArray1216.initiE).
-
-   + rewrite -H0. rewrite tP => i ib.
-   + rewrite!initiE 1:/# //= initiE 1:/#. rewrite  get8_set64_directE 1,2:/#.
-   + rewrite ifF 1:/#. rewrite /get8 /init8. smt(WArray1216.initiE).
-
-   + rewrite tP => i ib. rewrite !initiE 1:/# //=.
-   + rewrite !initiE 1:/# //=.
-   + rewrite get8_set64_directE /get8 1,2:/# //=.
-   case: (8 * i{!hr} <= i + 1184 && i + 1184 < 8 * i{!hr} + 8) => *.
-   + rewrite get64E pack8bE 1:/# initiE 1:/# /= initiE 1:/# //= initiE 1:/# //=.
-   + smt(). smt(WArray1216.initiE).
-
-   + rewrite tP => i ib. rewrite initiE 1:/#. rewrite initE.
-   case (0 <= i && i < 1216) => *.
-   + rewrite get8_set64_directE /get8 1,2:/# //=.
-   case: (8 * i{!hr} <= i && i  < 8 * i{!hr} + 8) => *.
-   + rewrite get64E pack8bE 1:/# initiE 1:/# /= initiE 1:/# //= initiE 1:/# //= initiE 1:/# //=.
-   + smt(). rewrite /init8. rewrite initiE 1:/# initiE 1:/# //=.
-   + rewrite initiE. smt(). smt(). smt(). smt(). smt().
-
-  wp.
-
-  call mlkem_kem_correct_kg; wp.
-  call eq_spec_xwing_25519_base_mulx; wp.
-  ecall{1} (shake256_A96_A32 expanded{1} srandomness{1}); wp.
-  (** post conditions look good until now **)
-  skip => />.
-  (** uh oh, why is it now asking me to prove:
-
-  forall (result_L0 : W8.t Array1184.t * W8.t Array2400.t * W64.t)
-  (result_R0 : publickey * secretkey)
-  ! (let (pk, sk) = result_R0 in
-     let (t, rho) = pk in
-     sk.`1 = (init ("_.[_]" result_L0.`2))%Array1152 /\
-     sk.`2.`1 = (init (fun (i0 : int) => result_L0.`2.[i0 + 1152]))%Array1152 /\
-     sk.`2.`2 = (init (fun (i0 : int) => result_L0.`2.[i0 + 2304]))%Array32 /\
-     sk.`3 = (init (fun (i0 : int) => result_L0.`2.[i0 + 2336]))%Array32 /\
-     sk.`4 = (init (fun (i0 : int) => result_L0.`2.[i0 + 2368]))%Array32 /\
-     t = (init ("_.[_]" result_L0.`1))%Array1152 /\
-     rho = (init (fun (i0 : int) => result_L0.`1.[i0 + 1152]))%Array32)
-  **)
-  move => &1. do split.
-  + rewrite tP => i ib. rewrite !initiE 1..6:/# //=.
-  + rewrite tP => i ib. rewrite !initiE 1..2:/# //= !initiE 1..4:/#.
-  move => H H0 H1 H2.
-  (** unable to prove because as far as I can tell, this is false! Is implementation wrong? **)
+   seq 3 0 : (#pre /\ sk{2} = skp{1} /\ sk0{2} = skp{1} /\ skp{1} = srandomness{1}).
+   while{1} (#pre /\ aux{1} = 4
+                  /\ 0 <= i{1} <= aux{1}
+                  /\ sk{2} = srandomness{1}
+                  /\ sk0{2} = srandomness{1}
+                  /\ (forall k, 0<=k<min (8 * i{1}) 32 => skp{1}.[k] = sk{2}.[k])
+                  /\ (forall k, 0<=k<min (8 * i{1}) 32 => skp{1}.[k] = sk0{2}.[k]))
+              (4 - i{1}).
+   + auto => />. move => &hr Z. rewrite !tP. move => H H0 H1 H2 H3 H4 H5 H6 H7 H8 H9. do split.
+   + smt(). smt(). move => i ib *. rewrite !initiE 1:/#.
+   + rewrite get8_set64_directE 1,2:/#. case(8 * i{!hr} <= i && i < 8 * i{!hr} + 8) => *.
+   + rewrite get64E /get8 /init8 !pack8bE 1:/# !initiE 1:/# //= !initiE 1:/# /# //=.
+   + rewrite /get8 /init8 !initiE 1:/# H8 1:/# /#.
+   + move => i ib *. rewrite !initiE 1:/#.
+   + rewrite get8_set64_directE 1,2:/#. case(8 * i{!hr} <= i && i < 8 * i{!hr} + 8) => *.
+   + rewrite get64E /get8 /init8 !pack8bE 1:/# !initiE 1:/# //= !initiE 1:/# /# //=.
+   + rewrite /get8 /init8 !initiE 1:/# H8 1:/# /#. smt().
+   wp. auto => />.
+   move => &1 &2 [#] *. do split. smt(). smt(). move => I I0. do split.
+   smt(). move => [#] H H0 H1 H2. do split.
+   rewrite tP => i ib. rewrite H2. smt(). smt().
+   rewrite tP => i ib. rewrite H2. smt(). smt().
+   rewrite tP => i ib. rewrite H2. smt(). smt().
+   wp. auto => />. rewrite !tP.
+   move => &1 &2 H H0 H1 H2 H3 H4 H5 H6. move => i ib. rewrite initiE 1,2:/#.
+   wp. auto => />.
 qed.
