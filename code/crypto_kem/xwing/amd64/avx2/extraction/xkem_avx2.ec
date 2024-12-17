@@ -9,14 +9,11 @@ Array1 Array2 Array4 Array5 Array6 Array7 Array8 Array16 Array24 Array25
 Array32 Array33 Array64 Array96 Array128 Array136 Array140 Array144 Array148
 Array152 Array256 Array300 Array384 Array400 Array536 Array768 Array960
 Array1024 Array1088 Array1120 Array1152 Array1184 Array1216 Array2048
-Array2144 Array2304 Array2400.
-
-require import
-WArray1 WArray2 WArray4 WArray6 WArray8 WArray16 WArray32 WArray33 WArray64
-WArray96 WArray128 WArray160 WArray192 WArray200 WArray224 WArray256
-WArray384 WArray512 WArray536 WArray800 WArray960 WArray1088 WArray1120
-WArray1152 WArray1184 WArray1216 WArray1536 WArray2048 WArray2144 WArray2400
-WArray4608.
+Array2144 Array2304 Array2400 WArray1 WArray2 WArray4 WArray6 WArray8
+WArray16 WArray32 WArray33 WArray64 WArray96 WArray128 WArray160 WArray192
+WArray200 WArray224 WArray256 WArray384 WArray512 WArray536 WArray800
+WArray960 WArray1088 WArray1120 WArray1152 WArray1184 WArray1216 WArray1536
+WArray2048 WArray2144 WArray2400 WArray4608.
 
 abbrev xWING_LABEL =
 (Array6.of_list witness
@@ -1103,7 +1100,7 @@ module M = {
     var t1:W256.t;
     t0 <- (VMOVSLDUP_256 b);
     t0 <- (VPBLEND_8u32 a t0 (W8.of_int 170));
-    a <- (VPSRL_4u64 a (W8.of_int 32));
+    a <- (VPSRL_4u64 a (W128.of_int 32));
     t1 <- (VPBLEND_8u32 a b (W8.of_int 170));
     return (t0, t1);
   }
@@ -1112,9 +1109,9 @@ module M = {
     var r1:W256.t;
     var t0:W256.t;
     var t1:W256.t;
-    t0 <- (VPSLL_8u32 b (W8.of_int 16));
+    t0 <- (VPSLL_8u32 b (W128.of_int 16));
     r0 <- (VPBLEND_16u16 a t0 (W8.of_int 170));
-    t1 <- (VPSRL_8u32 a (W8.of_int 16));
+    t1 <- (VPSRL_8u32 a (W128.of_int 16));
     r1 <- (VPBLEND_16u16 t1 b (W8.of_int 170));
     return (r0, r1);
   }
@@ -1256,7 +1253,7 @@ module M = {
   proc __csubq (r:W256.t, qx16:W256.t) : W256.t = {
     var t:W256.t;
     r <- (VPSUB_16u16 r qx16);
-    t <- (VPSRA_16u16 r (W8.of_int 15));
+    t <- (VPSRA_16u16 r (W128.of_int 15));
     t <- (VPAND_256 t qx16);
     r <- (VPADD_16u16 t r);
     return r;
@@ -1264,7 +1261,7 @@ module M = {
   proc __red16x (r:W256.t, qx16:W256.t, vx16:W256.t) : W256.t = {
     var x:W256.t;
     x <- (VPMULH_16u16 r vx16);
-    x <- (VPSRA_16u16 x (W8.of_int 10));
+    x <- (VPSRA_16u16 x (W128.of_int 10));
     x <- (VPMULL_16u16 x qx16);
     r <- (VPSUB_16u16 r x);
     return r;
@@ -1362,7 +1359,7 @@ module M = {
     ((2 %% (2 ^ 2)) +
     ((2 ^ 2) *
     ((3 %% (2 ^ 2)) + ((2 ^ 2) * ((0 %% (2 ^ 2)) + ((2 ^ 2) * 1))))))));
-    t1 <- (c14 \vshr64u256 (W8.of_int 63));
+    t1 <- (c14 \vshr64u256 (W128.of_int 63));
     t2 <- (c14 \vadd64u256 c14);
     t1 <- (t1 `|` t2);
     d14 <-
@@ -1380,7 +1377,7 @@ module M = {
     ((0 %% (2 ^ 2)) + ((2 ^ 2) * ((0 %% (2 ^ 2)) + ((2 ^ 2) * 0))))))));
     c00 <- (c00 `^` state.[0]);
     c00 <- (c00 `^` t0);
-    t0 <- (c00 \vshr64u256 (W8.of_int 63));
+    t0 <- (c00 \vshr64u256 (W128.of_int 63));
     t1 <- (c00 \vadd64u256 c00);
     t1 <- (t1 `|` t0);
     state.[2] <- (state.[2] `^` d00);
@@ -2449,8 +2446,8 @@ module M = {
       if ((r = 56)) {
         a.[x] <- (VPSHUFB_256 a.[x] r56);
       } else {
-        t <- (VPSLL_4u64 a.[x] (W8.of_int r));
-        a.[x] <- (VPSRL_4u64 a.[x] (W8.of_int (64 - r)));
+        t <- (VPSLL_4u64 a.[x] (W128.of_int r));
+        a.[x] <- (VPSRL_4u64 a.[x] (W128.of_int (64 - r)));
         a.[x] <- (a.[x] `|` t);
       }
     }
@@ -4672,7 +4669,7 @@ module M = {
         }
         (dELTA,  _2, tRAILB, t256) <@ a32____aread_bcast_4subu64 (buf,
         offset, dELTA, lEN, tRAILB);
-        t256 <- (VPSLL_4u64 t256 (W8.of_int (8 * lO)));
+        t256 <- (VPSLL_4u64 t256 (W128.of_int (8 * lO)));
         t256 <-
         (t256 `^`
         (get256_direct (WArray800.init256 (fun i => st.[i])) (W64.to_uint at)
@@ -4698,7 +4695,7 @@ module M = {
         }
         lEN <- (lEN - (8 - lO));
         aT <- (aT + (8 - lO));
-        t256 <- (VPSLL_4u64 t256 (W8.of_int (8 * lO)));
+        t256 <- (VPSLL_4u64 t256 (W128.of_int (8 * lO)));
         t256 <-
         (t256 `^`
         (get256_direct (WArray800.init256 (fun i => st.[i])) (W64.to_uint at)
@@ -6514,8 +6511,8 @@ module M = {
     al <- (VPBLEND_16u16 a0 _zero (W8.of_int 170));
     ah <- (VPBLEND_16u16 a1 _zero (W8.of_int 170));
     al <- (VPACKUS_8u32 al ah);
-    a0 <- (VPSRL_8u32 a0 (W8.of_int 16));
-    a1 <- (VPSRL_8u32 a1 (W8.of_int 16));
+    a0 <- (VPSRL_8u32 a0 (W128.of_int 16));
+    a1 <- (VPSRL_8u32 a1 (W128.of_int 16));
     ah <- (VPACKUS_8u32 a0 a1);
     return (al, ah);
   }
@@ -6797,19 +6794,19 @@ module M = {
       (get256_direct (WArray128.init8 (fun i_0 => buf.[i_0])) (24 * i));
       f0 <- (VPERMQ f0 (W8.of_int 148));
       f0 <- (VPSHUFB_256 f0 shufbidx);
-      f1 <- (VPSRL_8u32 f0 (W8.of_int 1));
-      f2 <- (VPSRL_8u32 f0 (W8.of_int 2));
+      f1 <- (VPSRL_8u32 f0 (W128.of_int 1));
+      f2 <- (VPSRL_8u32 f0 (W128.of_int 2));
       f0 <- (VPAND_256 mask249 f0);
       f1 <- (VPAND_256 mask249 f1);
       f2 <- (VPAND_256 mask249 f2);
       f0 <- (VPADD_8u32 f0 f1);
       f0 <- (VPADD_8u32 f0 f2);
-      f1 <- (VPSRL_8u32 f0 (W8.of_int 3));
+      f1 <- (VPSRL_8u32 f0 (W128.of_int 3));
       f0 <- (VPADD_8u32 f0 mask6DB);
       f0 <- (VPSUB_8u32 f0 f1);
-      f1 <- (VPSLL_8u32 f0 (W8.of_int 10));
-      f2 <- (VPSRL_8u32 f0 (W8.of_int 12));
-      f3 <- (VPSRL_8u32 f0 (W8.of_int 2));
+      f1 <- (VPSLL_8u32 f0 (W128.of_int 10));
+      f2 <- (VPSRL_8u32 f0 (W128.of_int 12));
+      f3 <- (VPSRL_8u32 f0 (W128.of_int 2));
       f0 <- (VPAND_256 f0 mask07);
       f1 <- (VPAND_256 f1 mask70);
       f2 <- (VPAND_256 f2 mask07);
@@ -6864,16 +6861,16 @@ module M = {
     i <- 0;
     while ((i < aux)) {
       f0 <- (get256 (WArray128.init8 (fun i_0 => buf.[i_0])) i);
-      f1 <- (VPSRL_16u16 f0 (W8.of_int 1));
+      f1 <- (VPSRL_16u16 f0 (W128.of_int 1));
       f0 <- (VPAND_256 mask55 f0);
       f1 <- (VPAND_256 mask55 f1);
       f0 <- (VPADD_32u8 f0 f1);
-      f1 <- (VPSRL_16u16 f0 (W8.of_int 2));
+      f1 <- (VPSRL_16u16 f0 (W128.of_int 2));
       f0 <- (VPAND_256 mask33 f0);
       f1 <- (VPAND_256 mask33 f1);
       f0 <- (VPADD_32u8 f0 mask33);
       f0 <- (VPSUB_32u8 f0 f1);
-      f1 <- (VPSRL_16u16 f0 (W8.of_int 4));
+      f1 <- (VPSRL_16u16 f0 (W128.of_int 4));
       f0 <- (VPAND_256 mask0F f0);
       f1 <- (VPAND_256 mask0F f1);
       f0 <- (VPSUB_32u8 f0 mask03);
@@ -8250,27 +8247,27 @@ module M = {
       (t6, t3) <@ __shuffle1 (t0, t3);
       (t0, t4) <@ __shuffle1 (t1, t4);
       (t1, t5) <@ __shuffle1 (t2, t5);
-      t7 <- (VPSRL_16u16 t6 (W8.of_int 12));
-      t8 <- (VPSLL_16u16 t3 (W8.of_int 4));
+      t7 <- (VPSRL_16u16 t6 (W128.of_int 12));
+      t8 <- (VPSLL_16u16 t3 (W128.of_int 4));
       t7 <- (VPOR_256 t7 t8);
       t6 <- (VPAND_256 mask t6);
       t7 <- (VPAND_256 mask t7);
-      t8 <- (VPSRL_16u16 t3 (W8.of_int 8));
-      t9 <- (VPSLL_16u16 t0 (W8.of_int 8));
+      t8 <- (VPSRL_16u16 t3 (W128.of_int 8));
+      t9 <- (VPSLL_16u16 t0 (W128.of_int 8));
       t8 <- (VPOR_256 t8 t9);
       t8 <- (VPAND_256 mask t8);
-      t9 <- (VPSRL_16u16 t0 (W8.of_int 4));
+      t9 <- (VPSRL_16u16 t0 (W128.of_int 4));
       t9 <- (VPAND_256 mask t9);
-      t10 <- (VPSRL_16u16 t4 (W8.of_int 12));
-      t11 <- (VPSLL_16u16 t1 (W8.of_int 4));
+      t10 <- (VPSRL_16u16 t4 (W128.of_int 12));
+      t11 <- (VPSLL_16u16 t1 (W128.of_int 4));
       t10 <- (VPOR_256 t10 t11);
       t4 <- (VPAND_256 mask t4);
       t10 <- (VPAND_256 mask t10);
-      t11 <- (VPSRL_16u16 t1 (W8.of_int 8));
-      tt <- (VPSLL_16u16 t5 (W8.of_int 8));
+      t11 <- (VPSRL_16u16 t1 (W128.of_int 8));
+      tt <- (VPSLL_16u16 t5 (W128.of_int 8));
       t11 <- (VPOR_256 t11 tt);
       t11 <- (VPAND_256 mask t11);
-      tt <- (VPSRL_16u16 t5 (W8.of_int 4));
+      tt <- (VPSRL_16u16 t5 (W128.of_int 4));
       tt <- (VPAND_256 mask tt);
       rp <-
       (Array256.init
@@ -8347,13 +8344,13 @@ module M = {
       g3 <- (VPSHUFD_256 f (W8.of_int (85 * i)));
       g3 <- (VPSLLV_8u32 g3 shift);
       g3 <- (VPSHUFB_256 g3 idx);
-      g0 <- (VPSLL_16u16 g3 (W8.of_int 12));
-      g1 <- (VPSLL_16u16 g3 (W8.of_int 8));
-      g2 <- (VPSLL_16u16 g3 (W8.of_int 4));
-      g0 <- (VPSRA_16u16 g0 (W8.of_int 15));
-      g1 <- (VPSRA_16u16 g1 (W8.of_int 15));
-      g2 <- (VPSRA_16u16 g2 (W8.of_int 15));
-      g3 <- (VPSRA_16u16 g3 (W8.of_int 15));
+      g0 <- (VPSLL_16u16 g3 (W128.of_int 12));
+      g1 <- (VPSLL_16u16 g3 (W128.of_int 8));
+      g2 <- (VPSLL_16u16 g3 (W128.of_int 4));
+      g0 <- (VPSRA_16u16 g0 (W128.of_int 15));
+      g1 <- (VPSRA_16u16 g1 (W128.of_int 15));
+      g2 <- (VPSRA_16u16 g2 (W128.of_int 15));
+      g3 <- (VPSRA_16u16 g3 (W128.of_int 15));
       g0 <- (VPAND_256 g0 hqs);
       g1 <- (VPAND_256 g1 hqs);
       g2 <- (VPAND_256 g2 hqs);
@@ -8420,21 +8417,21 @@ module M = {
       t5 <- (get256 (WArray512.init16 (fun i_0 => a.[i_0])) ((8 * i) + 5));
       t6 <- (get256 (WArray512.init16 (fun i_0 => a.[i_0])) ((8 * i) + 6));
       t7 <- (get256 (WArray512.init16 (fun i_0 => a.[i_0])) ((8 * i) + 7));
-      tt <- (VPSLL_16u16 t1 (W8.of_int 12));
+      tt <- (VPSLL_16u16 t1 (W128.of_int 12));
       tt <- (tt `|` t0);
-      t0 <- (VPSRL_16u16 t1 (W8.of_int 4));
-      t1 <- (VPSLL_16u16 t2 (W8.of_int 8));
+      t0 <- (VPSRL_16u16 t1 (W128.of_int 4));
+      t1 <- (VPSLL_16u16 t2 (W128.of_int 8));
       t0 <- (t0 `|` t1);
-      t1 <- (VPSRL_16u16 t2 (W8.of_int 8));
-      t2 <- (VPSLL_16u16 t3 (W8.of_int 4));
+      t1 <- (VPSRL_16u16 t2 (W128.of_int 8));
+      t2 <- (VPSLL_16u16 t3 (W128.of_int 4));
       t1 <- (t1 `|` t2);
-      t2 <- (VPSLL_16u16 t5 (W8.of_int 12));
+      t2 <- (VPSLL_16u16 t5 (W128.of_int 12));
       t2 <- (t2 `|` t4);
-      t3 <- (VPSRL_16u16 t5 (W8.of_int 4));
-      t4 <- (VPSLL_16u16 t6 (W8.of_int 8));
+      t3 <- (VPSRL_16u16 t5 (W128.of_int 4));
+      t4 <- (VPSLL_16u16 t6 (W128.of_int 8));
       t3 <- (t3 `|` t4);
-      t4 <- (VPSRL_16u16 t6 (W8.of_int 8));
-      t5 <- (VPSLL_16u16 t7 (W8.of_int 4));
+      t4 <- (VPSRL_16u16 t6 (W128.of_int 8));
+      t5 <- (VPSLL_16u16 t7 (W128.of_int 4));
       t4 <- (t4 `|` t5);
       (ttt, t0) <@ __shuffle1 (tt, t0);
       (tt, t2) <@ __shuffle1 (t1, t2);
@@ -8507,8 +8504,8 @@ module M = {
       f1 <- (get256 (WArray512.init16 (fun i_0 => a.[i_0])) ((2 * i) + 1));
       f0 <- (VPSUB_16u16 hq f0);
       f1 <- (VPSUB_16u16 hq f1);
-      g0 <- (VPSRA_16u16 f0 (W8.of_int 15));
-      g1 <- (VPSRA_16u16 f1 (W8.of_int 15));
+      g0 <- (VPSRA_16u16 f0 (W128.of_int 15));
+      g1 <- (VPSRA_16u16 f1 (W128.of_int 15));
       f0 <- (VPXOR_256 f0 g0);
       f1 <- (VPXOR_256 f1 g1);
       f0 <- (VPSUB_16u16 f0 hhq);
@@ -8663,7 +8660,7 @@ module M = {
         f <- (VPERMQ f (W8.of_int 148));
         f <- (VPSHUFB_256 f shufbidx);
         f <- (VPSLLV_8u32 f sllvdidx);
-        f <- (VPSRL_16u16 f (W8.of_int 1));
+        f <- (VPSRL_16u16 f (W128.of_int 1));
         f <- (VPAND_256 f mask);
         f <- (VPMULHRS_16u16 f q);
         r <-
@@ -8699,7 +8696,7 @@ module M = {
     a <@ __polyvec_csubq (a);
     x16p <- jvx16;
     v <- (get256 (WArray32.init16 (fun i_0 => x16p.[i_0])) 0);
-    v8 <- (VPSLL_16u16 v (W8.of_int 3));
+    v8 <- (VPSLL_16u16 v (W128.of_int 3));
     off <- (VPBROADCAST_16u16 pvc_off_s);
     shift1 <- (VPBROADCAST_16u16 pvc_shift1_s);
     mask <- (VPBROADCAST_16u16 pvc_mask_s);
@@ -8713,17 +8710,17 @@ module M = {
       f0 <- (get256 (WArray1536.init16 (fun i_0 => a.[i_0])) i);
       f1 <- (VPMULL_16u16 f0 v8);
       f2 <- (VPADD_16u16 f0 off);
-      f0 <- (VPSLL_16u16 f0 (W8.of_int 3));
+      f0 <- (VPSLL_16u16 f0 (W128.of_int 3));
       f0 <- (VPMULH_16u16 f0 v);
       f2 <- (VPSUB_16u16 f1 f2);
       f1 <- (VPANDN_256 f1 f2);
-      f1 <- (VPSRL_16u16 f1 (W8.of_int 15));
+      f1 <- (VPSRL_16u16 f1 (W128.of_int 15));
       f0 <- (VPSUB_16u16 f0 f1);
       f0 <- (VPMULHRS_16u16 f0 shift1);
       f0 <- (VPAND_256 f0 mask);
       f0 <- (VPMADDWD_256 f0 shift2);
       f0 <- (VPSLLV_8u32 f0 sllvdidx);
-      f0 <- (VPSRL_4u64 f0 (W8.of_int 12));
+      f0 <- (VPSRL_4u64 f0 (W128.of_int 12));
       f0 <- (VPSHUFB_256 f0 shufbidx);
       t0 <- (truncateu128 f0);
       t1 <- (VEXTRACTI128 f0 (W8.of_int 1));
@@ -8889,8 +8886,8 @@ module M = {
     ((1 %% (2 ^ 2)) + ((2 ^ 2) * ((1 %% (2 ^ 2)) + ((2 ^ 2) * 2))))))));
     f0 <- (VPSHUFB_256 f0 load_shuffle);
     f1 <- (VPSHUFB_256 f1 load_shuffle);
-    g0 <- (VPSRL_16u16 f0 (W8.of_int 4));
-    g1 <- (VPSRL_16u16 f1 (W8.of_int 4));
+    g0 <- (VPSRL_16u16 f0 (W128.of_int 4));
+    g1 <- (VPSRL_16u16 f1 (W128.of_int 4));
     f0 <- (VPBLEND_16u16 f0 g0 (W8.of_int 170));
     f1 <- (VPBLEND_16u16 f1 g1 (W8.of_int 170));
     f0 <- (VPAND_256 f0 mask);
@@ -9058,7 +9055,7 @@ module M = {
     ((2 ^ 2) *
     ((1 %% (2 ^ 2)) + ((2 ^ 2) * ((1 %% (2 ^ 2)) + ((2 ^ 2) * 2))))))));
     f0 <- (VPSHUFB_256 f0 load_shuffle);
-    g0 <- (VPSRL_16u16 f0 (W8.of_int 4));
+    g0 <- (VPSRL_16u16 f0 (W128.of_int 4));
     f0 <- (VPBLEND_16u16 f0 g0 (W8.of_int 170));
     f0 <- (VPAND_256 f0 mask);
     g0 <- (VPCMPGT_16u16 bounds f0);

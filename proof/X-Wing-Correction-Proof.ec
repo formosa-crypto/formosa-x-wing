@@ -3,7 +3,7 @@ require import AllCore IntDiv CoreMap List Distr IntDiv StdOrder.
 from Jasmin require import JModel_x86 JModel JWord JUtils.
 
 import SLH64 StdOrder.IntOrder.
-require import Xkem_avx2_clean  XWing_Spec XWing_Helper_Functions CorrectnessProof_Mulx Mulx_scalarmult_s Jkem_avx2_stack FIPS202_SHA3 Curve25519_Procedures MLKEM MLKEM_KEM_avx2_stack Symmetric.
+require import Xkem_avx2 Xkem_avx2_clean  XWing_Spec XWing_Helper_Functions CorrectnessProof_Mulx Mulx_scalarmult_s Jkem_avx2_stack FIPS202_SHA3 Curve25519_Procedures MLKEM MLKEM_KEM_avx2_stack Symmetric.
 require import Array4 Array6 Array8 Array32 Array64 Array96 Array140 Array152 Array128 Array960 Array1088 Array1120 Array1184 Array1216 Array2400 Array1152.
 require import WArray4 WArray6 WArray32 WArray64 WArray96 WArray1088 WArray1120 WArray1184 WArray1216 WArray2400.
 
@@ -662,9 +662,58 @@ proof.
 qed.
 
 
+axiom sha_equiv:
+  equiv [Xkem_avx2_clean.M._sha3_256_A128__A6 ~ Xkem_avx2.M._sha3_256_A128__A6: ={arg} ==> ={res}].
+
+axiom shake_equiv:
+  equiv [Xkem_avx2_clean.M._shake256_A96__A32 ~ Xkem_avx2.M._shake256_A96__A32: ={arg} ==> ={res}].
+
+axiom mlkem_kg_equiv:
+  equiv [Jkem_avx2_stack.M.jade_kem_mlkem_mlkem768_amd64_avx2_keypair_derand ~ Xkem_avx2.M.jade_kem_mlkem_mlkem768_amd64_avx2_keypair_derand: ={arg} ==> ={res}].
+
+axiom mlkem_enc_equiv:
+  equiv [Jkem_avx2_stack.M.jade_kem_mlkem_mlkem768_amd64_avx2_enc_derand ~ Xkem_avx2.M.jade_kem_mlkem_mlkem768_amd64_avx2_enc_derand: ={arg} ==> ={res}].
+
+axiom mlkem_dec_equiv:
+  equiv [Jkem_avx2_stack.M.jade_kem_mlkem_mlkem768_amd64_avx2_dec ~ Xkem_avx2.M.jade_kem_mlkem_mlkem768_amd64_avx2_dec: ={arg} ==> ={res}].
+
+lemma eq_xwing_clean_kg:
+  equiv [Xkem_avx2_clean.M.jade_kem_xwing_xwing_amd64_avx2_keypair_derand ~ Xkem_avx2.M.jade_kem_xwing_xwing_amd64_avx2_keypair_derand : ={arg} ==> ={res}].
+proof.
+    proc => />. wp; sp.
+    inline {1} 1. inline {2} 1.
+    wp. sim. call mlkem_kg_equiv.
+    wp. auto => />. sim.
+    call shake_equiv. auto => />.
+qed.
+
+lemma eq_xwing_clean_enc:
+  equiv [Xkem_avx2_clean.M.jade_kem_xwing_xwing_amd64_avx2_enc_derand ~ Xkem_avx2.M.jade_kem_xwing_xwing_amd64_avx2_enc_derand : ={arg} ==> ={res}].
+proof.
+    proc => />. wp; sp.
+    inline {1} 1. inline {2} 1.
+    wp. sim. call sha_equiv.
+    call mlkem_enc_equiv.
+    wp. auto => />. sim.
+qed.
+
+lemma eq_xwing_clean_dec:
+  equiv [Xkem_avx2_clean.M.jade_kem_xwing_xwing_amd64_avx2_dec ~ Xkem_avx2.M.jade_kem_xwing_xwing_amd64_avx2_dec : ={arg} ==> ={res}].
+proof.
+    proc => />. wp; sp.
+    inline {1} 1. inline {2} 1.
+    wp. sim. call sha_equiv.
+    auto => />. sim.
+    call mlkem_dec_equiv.
+    wp. auto => />. sim.
+    call mlkem_kg_equiv.
+    wp. auto => />.
+    call shake_equiv. auto => />.
+qed.
+
 
 lemma xwing_kg_correct:
-  equiv [Xkem_avx2_clean.M.jade_kem_xwing_xwing_amd64_avx2_keypair_derand ~ XWing.kg_derand :
+  equiv [Xkem_avx2.M.jade_kem_xwing_xwing_amd64_avx2_keypair_derand ~ XWing.kg_derand :
       sk{2} = coins{1}
       ==>
       res{2}.`1 = Array32.init(fun i => res{1}.`2.[i])  /\
@@ -672,12 +721,24 @@ lemma xwing_kg_correct:
       res{2}.`2.`1.`2 = Array32.init(fun i => res{1}.`1.[i+1152]) /\
       res{2}.`2.`2 = Array32.init(fun i => res{1}.`1.[i+1184])].
 proof.
+    transitivity
+    Xkem_avx2_clean.M.jade_kem_xwing_xwing_amd64_avx2_keypair_derand
+    (={arg} ==> ={res})
+    ( sk{2} = Array32.init(fun i => coins{1}.[i])
+      ==> res{2}.`1 = Array32.init(fun i => res{1}.`2.[i])  /\
+          res{2}.`2.`1.`1 = Array1152.init(fun i => res{1}.`1.[i]) /\
+          res{2}.`2.`1.`2 = Array32.init(fun i => res{1}.`1.[i+1152]) /\
+          res{2}.`2.`2 = Array32.init(fun i => res{1}.`1.[i+1184])).
+    + auto => />. move => &1. exists(public_key{1}, secret_key{1}, coins{1}).
+    + do split;1:smt(). rewrite tP => i ib. rewrite !initiE 1:/# /#.
+    + smt(). proc *. symmetry. call eq_xwing_clean_kg. auto => />.
+
     proc *. inline {1} 1. wp; sp. call eq_spec_xwing_keygen.
-    auto => />.
+    auto => />. move => &1. rewrite !tP => i ib. rewrite initiE 1:/# /#.
 qed.
 
 lemma xwing_enc_correct:
-  equiv [Xkem_avx2_clean.M.jade_kem_xwing_xwing_amd64_avx2_enc_derand ~ XWing.enc_derand :
+  equiv [Xkem_avx2.M.jade_kem_xwing_xwing_amd64_avx2_enc_derand ~ XWing.enc_derand :
          pk{2}.`1.`1 = Array1152.init (fun (i : int) => public_key{1}.[i])
       /\ pk{2}.`1.`2 = Array32.init (fun (i : int) => public_key{1}.[i + 1152])
       /\ pk{2}.`2    = Array32.init(fun i => public_key{1}.[i+1184])
@@ -689,12 +750,28 @@ lemma xwing_enc_correct:
       /\ res{2}.`1.`2    = Array32.init(fun i => res{1}.`1.[i+1088])
       /\ res{2}.`2 = res{1}.`2].
 proof.
+    transitivity
+    Xkem_avx2_clean.M.jade_kem_xwing_xwing_amd64_avx2_enc_derand
+    (={arg} ==> ={res})
+    ( pk{2}.`1.`1 = Array1152.init (fun (i : int) => public_key{1}.[i])
+      /\ pk{2}.`1.`2 = Array32.init (fun (i : int) => public_key{1}.[i + 1152])
+      /\ pk{2}.`2    = Array32.init(fun i => public_key{1}.[i+1184])
+      /\ coins{2}.`1 = Array32.init (fun (i : int) => coins{1}.[i])
+      /\ coins{2}.`2 = Array32.init (fun (i : int) => coins{1}.[i+32])
+      ==>
+      res{2}.`1.`1.`1 = Array960.init(fun i => res{1}.`1.[i])
+      /\ res{2}.`1.`1.`2 = Array128.init(fun i => res{1}.`1.[i+960])
+      /\ res{2}.`1.`2    = Array32.init(fun i => res{1}.`1.[i+1088])
+      /\ res{2}.`2 = res{1}.`2).
+    + auto => />. move => &1 &2 [#] *. exists(ciphertext{1}, shared_secret{1}, public_key{1}, coins{1}).
+    + do split;1..6:smt(). smt().
+    + proc *. symmetry. call eq_xwing_clean_enc. auto => />.
     proc *. inline {1} 1. wp; sp. call eq_spec_xwing_enc.
     auto => />.
 qed.
 
 lemma xwing_dec_correct:
-  equiv [Xkem_avx2_clean.M.jade_kem_xwing_xwing_amd64_avx2_dec ~ XWing.dec :
+  equiv [Xkem_avx2.M.jade_kem_xwing_xwing_amd64_avx2_dec ~ XWing.dec :
          secret_key{1} = sk{2}
       /\ cph{2}.`1.`1 = Array960.init(fun i => ciphertext{1}.[i])
       /\ cph{2}.`1.`2 = Array128.init(fun i => ciphertext{1}.[i+960])
@@ -702,6 +779,18 @@ lemma xwing_dec_correct:
       ==>
       res{1}.`1 = res{2}].
 proof.
+    transitivity
+    Xkem_avx2_clean.M.jade_kem_xwing_xwing_amd64_avx2_dec
+    (={arg} ==> ={res})
+    ( secret_key{1} = sk{2}
+      /\ cph{2}.`1.`1 = Array960.init(fun i => ciphertext{1}.[i])
+      /\ cph{2}.`1.`2 = Array128.init(fun i => ciphertext{1}.[i+960])
+      /\ cph{2}.`2    = Array32.init(fun i => ciphertext{1}.[i+1088])
+      ==>
+      res{1}.`1 = res{2}).
+    + auto => />. move => &1 &2 [#] *. exists(shared_secret{1}, ciphertext{1}, secret_key{1}).
+    + do split;1..5:smt(). smt().
+    + proc *. symmetry. call eq_xwing_clean_dec. auto => />.
     proc *. inline {1} 1. wp; sp. call eq_spec_xwing_dec.
     auto => />.
 qed.
