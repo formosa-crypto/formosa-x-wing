@@ -135,7 +135,7 @@ fn _crypto_xkem_dec_jazz(
 
   // (pk_M, sk_M) = ML-KEM-768.KeyGen_internal(expanded[0:32], expanded[32:64])
   expanded_mlkem = expanded[0:MLKEM_SYMBYTES + MLKEM_SYMBYTES];
-  pk_mlkem, sk_mlkem = __crypto_kem_keypair_jazz(pk_mlkem, sk_mlkem, expanded_mlkem);
+  pk_mlkem, sk_mlkem, _ = jade_kem_mlkem_mlkem768_amd64_avx2_keypair_derand(pk_mlkem, sk_mlkem, expanded_mlkem);
   // decaps pk_mlkem sk_mlkem = keygen pk_mlkem sk_mlkem
 
   // ignoring the assignment sk_X = expanded[64:96] as we do not use it in this step key generation
@@ -151,7 +151,7 @@ fn _crypto_xkem_dec_jazz(
 
   // ss_M = ML-KEM-768.Decapsulate(ct_M, sk_M)
   // ss_X = X25519(sk_X, ct_X)
-  ss_mlkem = __crypto_kem_dec_jazz(ss_mlkem, ct_mlkem, sk_mlkem);
+  ss_mlkem, _ = jade_kem_mlkem_mlkem768_amd64_avx2_dec(ss_mlkem, ct_mlkem, sk_mlkem);
   ss_x25519 = xwing_x25519(ss_x25519, expanded_x25519, ct_x25519);
 
   // ss = Combiner(ss_M, ss_X, ct_X, pk_X)

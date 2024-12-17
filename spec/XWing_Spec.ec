@@ -48,7 +48,7 @@ module XWing = {
 
         ss_M <@ MLKEM.dec(ct_M, sk_M);
 
-        ss_X_256 <@ CurveProcedures.scalarmult(W32u8.pack32 (to_list sk_X), W32u8.pack32 (to_list pk_X));
+        ss_X_256 <@ CurveProcedures.scalarmult(W32u8.pack32 (to_list sk_X), W32u8.pack32 (to_list ct_X));
         ss_X <- Array32.of_list W8.zero (W32u8.to_list ss_X_256);
 
         ss <@ XWing_Helper_Functions.combiner(ss_M, ss_X, ct_X, pk_X);

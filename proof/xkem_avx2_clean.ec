@@ -253,6 +253,8 @@ module M = {
     var ss:W8.t Array32.t;
     var i:int;
     var t64:W64.t;
+    var  _0:W64.t;
+    var  _1:W64.t;
     ct_mlkem <- witness;
     ct_x25519 <- witness;
     expanded <- witness;
@@ -293,14 +295,14 @@ module M = {
     );
     expanded <@ _shake256_A96__A32 (expanded, sskp);
     expanded_mlkem <- (Array64.init (fun i_0 => expanded.[(0 + i_0)]));
-    (pk_mlkem, sk_mlkem) <@ Jkem_avx2_stack.M.__crypto_kem_keypair_jazz (pk_mlkem, sk_mlkem, expanded_mlkem);
+    (pk_mlkem, sk_mlkem, _0) <@ Jkem_avx2_stack.M.jade_kem_mlkem_mlkem768_amd64_avx2_keypair_derand (pk_mlkem, sk_mlkem, expanded_mlkem);
     expanded_x25519 <-
     (Array32.init (fun i_0 => expanded.[((32 + 32) + i_0)]));
     pk_x25519 <@ xwing_x25519_base (pk_x25519, expanded_x25519);
     ct_mlkem <- (Array1088.init (fun i_0 => sctp.[(0 + i_0)]));
     ct_x25519 <-
     (Array32.init (fun i_0 => sctp.[(((3 * 320) + 128) + i_0)]));
-    ss_mlkem <@ Jkem_avx2_stack.M.__crypto_kem_dec_jazz (ss_mlkem, ct_mlkem, sk_mlkem);
+    (ss_mlkem, _1) <@ Jkem_avx2_stack.M.jade_kem_mlkem_mlkem768_amd64_avx2_dec (ss_mlkem, ct_mlkem, sk_mlkem);
     ss_x25519 <@ xwing_x25519 (ss_x25519, expanded_x25519, ct_x25519);
     ss <@ _sha3_256_A128__A6 (ss, ss_mlkem, ss_x25519, ct_x25519, pk_x25519);
     (* Erased call to unspill *)

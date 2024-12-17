@@ -17,6 +17,34 @@ axiom sha3_256_A128__A6 ss ss_mlkem ss_x25519 ct_25519 pk_25519 :
                arg = (ss, ss_mlkem, ss_x25519, ct_25519, pk_25519) ==>
                res = SHA3_256_134_32 (ss_mlkem, ss_x25519, ct_25519, pk_25519, xwing_label)] = 1%r.
 
+lemma copy1120 (a : W8.t Array1120.t) :
+Array1120.init (fun (i : int)  =>  WArray1120.get8 (WArray1120.init64
+               (fun (i0 : int) =>  copy_64 (Array140.init
+               (fun (i1 : int) =>  WArray1120.get64 (WArray1120.init8
+               (fun (i2 : int) =>  a.[i2]))  i1)).[i0])) i) = a.
+rewrite tP => k kb.
+rewrite initiE 1:/# /= /get8.
+rewrite initiE 1:/# /= /copy_64.
+rewrite initiE 1:/# /= /get64_direct.
+rewrite W8u8.pack8bE 1:/# /=.
+rewrite initiE 1:/# /=.
+rewrite initiE /#.
+qed.
+
+lemma copy1216 (a : W8.t Array1216.t) :
+Array1216.init (fun (i : int)  =>  WArray1216.get8 (WArray1216.init64
+               (fun (i0 : int) =>  copy_64 (Array152.init
+               (fun (i1 : int) =>  WArray1216.get64 (WArray1216.init8
+               (fun (i2 : int) =>  a.[i2]))  i1)).[i0])) i) = a.
+rewrite tP => k kb.
+rewrite initiE 1:/# /= /get8.
+rewrite initiE 1:/# /= /copy_64.
+rewrite initiE 1:/# /= /get64_direct.
+rewrite W8u8.pack8bE 1:/# /=.
+rewrite initiE 1:/# /=.
+rewrite initiE /#.
+qed.
+
 
 abbrev toRep4 (x: W8.t Array32.t) = Array4.of_list W64.zero (to_list (unpack64 (pack32 (to_list x)))).
 
@@ -144,10 +172,10 @@ lemma eq_spec_xwing_keygen:
   equiv [Xkem_avx2_clean.M._crypto_xkem_keypair_derand_jazz ~ XWing.kg_derand :
       sk{2} = randomness{1} (** in the rfc, the derand version uses sk to denote the coins **)
       ==>
-         res{2}.`1 = Array32.init(fun i => res{1}.`2.[i])  /\
-         res{2}.`2.`1.`1 = Array1152.init(fun i => res{1}.`1.[i]) /\
-         res{2}.`2.`1.`2 = Array32.init(fun i => res{1}.`1.[i+1152]) /\
-         res{2}.`2.`2 = Array32.init(fun i => res{1}.`1.[i+1184])].
+      res{2}.`1 = Array32.init(fun i => res{1}.`2.[i])  /\
+      res{2}.`2.`1.`1 = Array1152.init(fun i => res{1}.`1.[i]) /\
+      res{2}.`2.`1.`2 = Array32.init(fun i => res{1}.`1.[i+1152]) /\
+      res{2}.`2.`2 = Array32.init(fun i => res{1}.`1.[i+1184])].
 proof.
   proc => />.
   proc rewrite {1} 8 (copy32). inline {2} 1. auto => />.
@@ -314,21 +342,6 @@ proof.
    wp. auto => />. rewrite !tP.
    move => &1 &2 H H0 H1 H2 H3 H4 H5 H6. move => i ib. rewrite initiE 1,2:/#.
    wp. auto => />.
-qed.
-
-
-lemma copy1216 (a : W8.t Array1216.t) :
-Array1216.init (fun (i : int)  =>  WArray1216.get8 (WArray1216.init64
-               (fun (i0 : int) =>  copy_64 (Array152.init
-               (fun (i1 : int) =>  WArray1216.get64 (WArray1216.init8
-               (fun (i2 : int) =>  a.[i2]))  i1)).[i0])) i) = a.
-rewrite tP => k kb.
-rewrite initiE 1:/# /= /get8.
-rewrite initiE 1:/# /= /copy_64.
-rewrite initiE 1:/# /= /get64_direct.
-rewrite W8u8.pack8bE 1:/# /=.
-rewrite initiE 1:/# /=.
-rewrite initiE /#.
 qed.
 
 
@@ -535,5 +548,178 @@ proof.
     move => &1 &2 [#] H H0 H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19 H20 H21.
     do split. smt(). move => [#] H22 H23 H24. smt(). move => [#] H24 H25. do split. smt().
     move => [#] H28 H29 H30 H31. do split. rewrite tP => i ib. smt(). rewrite tP => i ib. smt().
+    auto => />.
+qed.
+
+lemma eq_spec_xwing_dec:
+  equiv [Xkem_avx2_clean.M._crypto_xkem_dec_jazz ~ XWing.dec :
+      skp{1} = sk{2}
+   /\ cph{2}.`1.`1 = Array960.init(fun i => ctp{1}.[i])
+   /\ cph{2}.`1.`2 = Array128.init(fun i => ctp{1}.[i+960])
+   /\ cph{2}.`2    = Array32.init(fun i => ctp{1}.[i+1088])
+      ==>
+   ={res}].
+proof.
+    proc => />.
+    proc rewrite {1} 14 (copy1120).
+    proc rewrite {1} 15 (copy32).
+    inline {2} 1. auto => />.
+    seq 16 2 : (#pre /\ expanded{1} = SHAKE256_32_96 sskp{1}
+                  /\ skp{1} = sskp{1}
+                  /\ sctp{1} = ctp{1}
+                  /\ ={expanded}
+                  /\ sskp{1} = sk0{2}
+                  /\ sskp{1} = sk{2}).
+  + ecall {1} (shake256_A96_A32 expanded{1} sskp{1}); wp; skip => />.
+
+  swap{1} 3 -2. swap{2} 3 -2.
+  seq 1 1 : (#pre /\ coins3{2} = expanded_x25519{1}
+                  /\ coins3{2} = Array32.init(fun (i : int) => expanded{1}.[i + 64])
+                  /\ coins3{2} = Array32.init(fun (i : int) => expanded{2}.[i + 64])).
+  + auto => />. move => &1 &2 [#] H H0 H1. rewrite !tP. do split.
+  + move => i ib. rewrite !initiE 1,2:/# //= /#. + move => i ib. rewrite !initiE 1,2:/# //= /#.
+
+  seq 1 2 : (#pre /\ coins1{2} = Array32.init (fun (i : int ) => expanded_mlkem{1}.[i])
+                  /\ coins2{2} = Array32.init (fun (i : int ) => expanded_mlkem{1}.[32 + i])
+                  /\ coins1{2} = Array32.init (fun (i : int ) => expanded{1}.[i])
+                  /\ coins2{2} = Array32.init (fun (i : int ) => expanded{1}.[32 + i])
+                  /\ coins1{2} = Array32.init (fun (i : int ) => expanded{2}.[i])
+                  /\ coins2{2} = Array32.init (fun (i : int ) => expanded{2}.[32+i])).
+  + auto => />. move => &1 &2 [#] H H0 H1. do split.  rewrite tP => i ib. rewrite !initiE 1..5:/# //=.
+  + rewrite tP => i ib. rewrite !initiE 1..2:/# //= !initiE 1..3:/# //=.
+
+  auto => />.
+  seq 0 1 : (#pre /\ expanded_x25519{1} = sk_X0{2}
+                  /\ sk_X0{2} = coins3{2}).
+  + auto => />.
+  swap{1} 1 1.
+  seq 1 1 : (#pre /\ pack32 (to_list pk_x25519{1}) = pk_X_256{2}).
+  + call eq_spec_xwing_25519_base_mulx. auto => />.
+
+  seq 0 1 : (#pre /\ pk_x25519{1} = pk_X0{2}
+                  /\ pk_x25519{1} = Array32.of_list W8.zero (W32u8.to_list pk_X_256{2})). auto => />.
+  + move => &1 &2 [#] *. rewrite !tP. do split.
+  + move => i ib. rewrite !/to_list !/mkseq -!iotaredE => />. rewrite !/of_list initiE 1:/# //=. smt().
+  + move => i ib. rewrite !/to_list !/mkseq -!iotaredE => />. rewrite !/of_list initiE 1:/# //=. smt().
+
+  seq 1 1 : (#pre /\ pk_M0{2}.`1 = (init (fun (i : int) =>  pk_mlkem{1}.[i]))%Array1152
+                  /\ pk_M0{2}.`2 = (init (fun (i : int) =>  pk_mlkem{1}.[i + 1152]))%Array32
+                  /\ sk_M0{2}.`1 = Array1152.init(fun i => sk_mlkem{1}.[i])
+                  /\ sk_M0{2}.`2.`1 = Array1152.init(fun i => sk_mlkem{1}.[i+1152])
+                  /\ sk_M0{2}.`2.`2 = Array32.init(fun i => sk_mlkem{1}.[i+1152+1152])
+                  /\ sk_M0{2}.`3 = Array32.init(fun i => sk_mlkem{1}.[i+1152+1152 + 32])
+                  /\ sk_M0{2}.`4 = Array32.init(fun i => sk_mlkem{1}.[i+1152+1152 + 32 + 32])
+                  /\ let (t,rho) = pk_M0{2} in
+                     sk_M0{2}.`1 = Array1152.init(fun i => sk_mlkem{1}.[i])
+                  /\ sk_M0{2}.`2.`1 = Array1152.init(fun i => sk_mlkem{1}.[i+1152])
+                  /\ sk_M0{2}.`2.`2 = Array32.init(fun i => sk_mlkem{1}.[i+1152+1152])
+                  /\ sk_M0{2}.`3 = Array32.init(fun i => sk_mlkem{1}.[i+1152+1152 + 32])
+                  /\ sk_M0{2}.`4 = Array32.init(fun i => sk_mlkem{1}.[i+1152+1152 + 32 + 32])
+                  /\ t = Array1152.init(fun i => pk_mlkem{1}.[i])
+                  /\ rho = Array32.init(fun i => pk_mlkem{1}.[i+1152])).
+  + call mlkem_kem_correct_kg. auto => />. smt(). auto => />.
+
+  seq 0 2 : (#pre /\ sk_M{2} = sk_M0{2}
+                  /\ sk_X{2} = sk_X0{2}
+                  /\ pk_M{2} = pk_M0{2}
+                  /\  pk_X{2} = pk_X0{2}). auto => />.
+
+  seq 2 2 : (#pre /\ Array960.init (fun (i:int) => ct_mlkem{1}.[i]) = ct_M{2}.`1
+                  /\ Array128.init (fun (i:int) => ct_mlkem{1}.[i+960]) = ct_M{2}.`2
+                  /\ ct_x25519{1} = ct_X{2}
+                  /\ ct_M{2}.`1 = (init (fun (i_0 : int) => sctp{1}.[0 + i_0]))%Array960
+                  /\ ct_M{2}.`2 = (init (fun (i_0 : int) => sctp{1}.[960 + i_0]))%Array128
+                  /\ ct_X{2} = (init (fun (i_0 : int) => sctp{1}.[3 * 320 + 128 + i_0]))%Array32).
+  + wp; auto => />; move => &1 &2 [#] H H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13. rewrite !tP. do split.
+  + move => i ib. rewrite H  !initiE 1..3:/# //=.
+  + move => i ib. rewrite H1  !initiE 1:/# //= !initiE 1:/# //=.
+  + move => i ib. rewrite H2  !initiE 1:/# //= //= /#.
+  + move => i ib. rewrite H1 !initiE 1:/# //= //= /#.
+  + move => i ib. rewrite H2 !initiE 1:/# //= //= /#.
+
+  seq 1 1 : (#pre /\ ss_mlkem{1} = ss_M{2}).
+  + call mlkem_kem_correct_dec. auto => />.
+  + move => [#] &1 &2 eH H0 H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19.
+  + rewrite !tP. do split;1:smt(). move => i ib. rewrite H14 1:/#.
+
+  seq 1 1 : (#pre /\ pack32 (to_list ss_x25519{1}) = ss_X_256{2} /\ expanded_x25519{1} = sk_X{2}).
+  + call eq_spec_xwing_25519_mulx. auto => />.
+
+  seq 0 1 : (#pre /\ ss_X{2} = ss_x25519{1}). auto => />. rewrite !tP. move => *.
+  rewrite !/of_list !/to_list !/mkseq -!iotaredE => />. rewrite !initiE 1:/# /#.
+
+  seq 1 1 : (#pre /\ ={ss}).
+  + inline {2} 1. wp; sp.
+  + ecall {1} (sha3_256_A128__A6 ss{1} ss_mlkem{1} ss_x25519{1} ct_x25519{1} pk_x25519{1}).
+  + wp; skip => />.
+
+  + seq 3 0 : (#pre  /\ ss{2} = shkp{1} /\ ={ss} /\ shkp{1} = ss{1}).
+
+    + while{1} (#pre /\ aux{1} = 4
+                     /\ 0 <= i{1} <= 4
+                     /\ ={ss}
+                     /\ (forall k, 0<=k<min (8 * i{1}) 32 => shkp{1}.[k] = ss{1}.[k])
+                     /\ (forall k, 0<=k<min (8 * i{1}) 32 => shkp{1}.[k] = ss{2}.[k])) (4 - i{1}).
+    + auto => />. move => &hr Z. rewrite !tP.
+    + move => [#] H H0 H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17.
+    + move => [#] H18 H19.
+    + do split. smt(). smt().
+    + move => i ib *.  rewrite !initiE 1:/#.
+    + rewrite get8_set64_directE 1,2:/#. case(8 * i{!hr} <= i && i < 8 * i{!hr} + 8) => *.
+    + rewrite get64E /init8 pack8bE 1:/# !initiE 1:/# //= !initiE 1:/# //= /#.
+    + rewrite /get8 /init8 -H18 1:/#. smt(WArray32.initiE).
+    + move => i ib *.  rewrite !initiE 1:/#.
+    + rewrite get8_set64_directE 1,2:/#. case(8 * i{!hr} <= i && i < 8 * i{!hr} + 8) => *.
+    + rewrite get64E /init8 pack8bE 1:/# !initiE 1:/# //= !initiE 1:/# //= /#.
+    + rewrite /get8 /init8 -H18 1:/#. smt(WArray32.initiE).  smt().
+    wp. simplify. skip => />.
+    move => &1 &2 [#] H H0 H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16.
+    do split. smt(). move => [#] H22 H23 H24. smt(). move => [#] H24 H25. do split. smt().
+    move => [#] H28 H29 H30 H31. do split. rewrite tP => i ib. smt(). rewrite tP => i ib. smt().
+    auto => />.
+qed.
+
+
+
+lemma xwing_kg_correct:
+  equiv [Xkem_avx2_clean.M.jade_kem_xwing_xwing_amd64_avx2_keypair_derand ~ XWing.kg_derand :
+      sk{2} = coins{1}
+      ==>
+      res{2}.`1 = Array32.init(fun i => res{1}.`2.[i])  /\
+      res{2}.`2.`1.`1 = Array1152.init(fun i => res{1}.`1.[i]) /\
+      res{2}.`2.`1.`2 = Array32.init(fun i => res{1}.`1.[i+1152]) /\
+      res{2}.`2.`2 = Array32.init(fun i => res{1}.`1.[i+1184])].
+proof.
+    proc *. inline {1} 1. wp; sp. call eq_spec_xwing_keygen.
+    auto => />.
+qed.
+
+lemma xwing_enc_correct:
+  equiv [Xkem_avx2_clean.M.jade_kem_xwing_xwing_amd64_avx2_enc_derand ~ XWing.enc_derand :
+         pk{2}.`1.`1 = Array1152.init (fun (i : int) => public_key{1}.[i])
+      /\ pk{2}.`1.`2 = Array32.init (fun (i : int) => public_key{1}.[i + 1152])
+      /\ pk{2}.`2    = Array32.init(fun i => public_key{1}.[i+1184])
+      /\ coins{2}.`1 = Array32.init (fun (i : int) => coins{1}.[i])
+      /\ coins{2}.`2 = Array32.init (fun (i : int) => coins{1}.[i+32])
+      ==>
+         res{2}.`1.`1.`1 = Array960.init(fun i => res{1}.`1.[i])
+      /\ res{2}.`1.`1.`2 = Array128.init(fun i => res{1}.`1.[i+960])
+      /\ res{2}.`1.`2    = Array32.init(fun i => res{1}.`1.[i+1088])
+      /\ res{2}.`2 = res{1}.`2].
+proof.
+    proc *. inline {1} 1. wp; sp. call eq_spec_xwing_enc.
+    auto => />.
+qed.
+
+lemma xwing_dec_correct:
+  equiv [Xkem_avx2_clean.M.jade_kem_xwing_xwing_amd64_avx2_dec ~ XWing.dec :
+         secret_key{1} = sk{2}
+      /\ cph{2}.`1.`1 = Array960.init(fun i => ciphertext{1}.[i])
+      /\ cph{2}.`1.`2 = Array128.init(fun i => ciphertext{1}.[i+960])
+      /\ cph{2}.`2    = Array32.init(fun i => ciphertext{1}.[i+1088])
+      ==>
+      res{1}.`1 = res{2}].
+proof.
+    proc *. inline {1} 1. wp; sp. call eq_spec_xwing_dec.
     auto => />.
 qed.
