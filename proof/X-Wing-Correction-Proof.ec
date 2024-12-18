@@ -930,30 +930,6 @@ proof.
     auto => />.
 qed.
 
-lemma eq_xwing_clean_enc:
-  equiv [Xkem_avx2_clean.M.jade_kem_xwing_xwing_amd64_avx2_enc_derand ~ Xkem_avx2.M.jade_kem_xwing_xwing_amd64_avx2_enc_derand : ={arg} ==> ={res}].
-proof.
-    proc => />. wp; sp.
-    inline {1} 1. inline {2} 1.
-    wp. sim. call sha_equiv.
-    call mlkem_enc_equiv.
-    wp. auto => />. sim.
-qed.
-
-lemma eq_xwing_clean_dec:
-  equiv [Xkem_avx2_clean.M.jade_kem_xwing_xwing_amd64_avx2_dec ~ Xkem_avx2.M.jade_kem_xwing_xwing_amd64_avx2_dec : ={arg} ==> ={res}].
-proof.
-    proc => />. wp; sp.
-    inline {1} 1. inline {2} 1.
-    wp. sim. call sha_equiv.
-    auto => />. sim.
-    call mlkem_dec_equiv.
-    wp. auto => />. sim.
-    call mlkem_kg_equiv.
-    wp. auto => />.
-    call shake_equiv. auto => />.
-qed.
-
 
 lemma xwing_kg_correct:
   equiv [Xkem_avx2.M.jade_kem_xwing_xwing_amd64_avx2_keypair_derand ~ XWing.kg_derand :
