@@ -3,7 +3,7 @@ require import AllCore IntDiv CoreMap List Distr IntDiv StdOrder.
 from Jasmin require import JModel_x86 JModel JWord JUtils.
 
 import SLH64 StdOrder.IntOrder.
-require import Xkem_avx2 Xkem_avx2_clean  XWing_Spec XWing_Helper_Functions CorrectnessProof_Mulx Mulx_scalarmult_s Jkem_avx2_stack FIPS202_SHA3 Curve25519_Procedures MLKEM MLKEM_KEM_avx2_stack Symmetric.
+require import Xkem_avx2 Xkem_avx2_clean XWing_Spec XWing_Helper_Functions CorrectnessProof_Mulx Mulx_scalarmult_s Jkem_avx2_stack FIPS202_SHA3 Curve25519_Procedures MLKEM InnerPKE MLKEM_KEM_avx2_stack Symmetric.
 require import Array4 Array6 Array8 Array32 Array64 Array96 Array140 Array152 Array128 Array960 Array1088 Array1120 Array1184 Array1216 Array2400 Array1152.
 require import WArray4 WArray6 WArray32 WArray64 WArray96 WArray1088 WArray1120 WArray1184 WArray1216 WArray2400.
 
@@ -47,8 +47,277 @@ proof.
   rewrite initiE /#.
 qed.
 
-
 abbrev toRep4 (x: W8.t Array32.t) = Array4.of_list W64.zero (to_list (unpack64 (pack32 (to_list x)))).
+
+equiv aux_buflen_dumpstate1_xkem :
+Jkem_avx2_stack.M.aBUFLEN____dumpstate_array_avx2 ~ Xkem_avx2.M.aBUFLEN____dumpstate_array_avx2 : ={buf, offset, lEN, st}  ==> ={res}.
+proc => /=.
+  sp;if;1: by auto.
+  seq 1 1 : (={buf, offset, lEN, st,buf, dELTA,_0}); 1: by sim.
+  sp;seq 1 1 : (={buf, offset, lEN, st,buf, dELTA,_0}); 1: by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA,_0}); 1: by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA,_0,t256_0,t256_1,t256_2,t256_3}); by sim.
+  by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA,_0,t256_0,t256_1,t256_2,t256_3}); by sim.
+  by sim.
+  seq 1 1 : (={buf, offset, lEN, st,buf, dELTA}); 1: by sim.
+  sp;seq 1 1 : (={buf, offset, lEN, st,buf, dELTA}); 1: by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA}); 1: by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA,t256_0,t256_1,t256_2,t256_3}); by sim.
+  by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA,t256_0,t256_1,t256_2,t256_3}); by sim.
+  by sim.
+qed.
+
+
+equiv aux_dumpstate_xkem :
+  Jkem_avx2_stack.M.a64____dumpstate_array_avx2 ~ Xkem_avx2.M.a64____dumpstate_array_avx2 :
+   ={buf, offset, lEN, st} ==> ={res}.
+proc => /=.
+  sp;if;1: by auto.
+  seq 1 1 : (={buf, offset, lEN, st,buf, dELTA,_0}); 1: by sim.
+  sp;seq 1 1 : (={buf, offset, lEN, st,buf, dELTA,_0}); 1: by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA,_0}); 1: by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA,_0,t256_0,t256_1,t256_2,t256_3}); by sim.
+  by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA,_0,t256_0,t256_1,t256_2,t256_3}); by sim.
+  by sim.
+  seq 1 1 : (={buf, offset, lEN, st,buf, dELTA}); 1: by sim.
+  sp;seq 1 1 : (={buf, offset, lEN, st,buf, dELTA}); 1: by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA}); 1: by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA,t256_0,t256_1,t256_2,t256_3}); by sim.
+  by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA,t256_0,t256_1,t256_2,t256_3}); by sim.
+  by sim.
+qed.
+
+equiv aux_dumpstate32_xkem :
+  Jkem_avx2_stack.M.a32____dumpstate_array_avx2 ~ Xkem_avx2.M.a32____dumpstate_array_avx2 :
+   ={buf, offset, lEN, st} ==> ={res}.
+proc => /=.
+  sp;if;1: by auto.
+  seq 1 1 : (={buf, offset, lEN, st,buf, dELTA,_0}); 1: by sim.
+  sp;seq 1 1 : (={buf, offset, lEN, st,buf, dELTA,_0}); 1: by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA,_0}); 1: by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA,_0,t256_0,t256_1,t256_2,t256_3}); by sim.
+  by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA,_0,t256_0,t256_1,t256_2,t256_3}); by sim.
+  by sim.
+  seq 1 1 : (={buf, offset, lEN, st,buf, dELTA}); 1: by sim.
+  sp;seq 1 1 : (={buf, offset, lEN, st,buf, dELTA}); 1: by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA}); 1: by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA,t256_0,t256_1,t256_2,t256_3}); by sim.
+  by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA,t256_0,t256_1,t256_2,t256_3}); by sim.
+  by sim.
+qed.
+
+equiv aux_buflen_dumpstate1_xkem_clean :
+Xkem_avx2_clean.M.aBUFLEN____dumpstate_array_avx2 ~ Xkem_avx2.M.aBUFLEN____dumpstate_array_avx2 : ={buf, offset, lEN, st}  ==> ={res}.
+proc => /=.
+  sp;if;1: by auto.
+  seq 1 1 : (={buf, offset, lEN, st,buf, dELTA,_0}); 1: by sim.
+  sp;seq 1 1 : (={buf, offset, lEN, st,buf, dELTA,_0}); 1: by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA,_0}); 1: by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA,_0,t256_0,t256_1,t256_2,t256_3}); by sim.
+  by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA,_0,t256_0,t256_1,t256_2,t256_3}); by sim.
+  by sim.
+  seq 1 1 : (={buf, offset, lEN, st,buf, dELTA}); 1: by sim.
+  sp;seq 1 1 : (={buf, offset, lEN, st,buf, dELTA}); 1: by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA}); 1: by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA,t256_0,t256_1,t256_2,t256_3}); by sim.
+  by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA,t256_0,t256_1,t256_2,t256_3}); by sim.
+  by sim.
+qed.
+
+
+equiv aux_dumpstate_xkem_clean :
+  Xkem_avx2_clean.M.a64____dumpstate_array_avx2 ~ Xkem_avx2.M.a64____dumpstate_array_avx2 :
+   ={buf, offset, lEN, st} ==> ={res}.
+proc => /=.
+  sp;if;1: by auto.
+  seq 1 1 : (={buf, offset, lEN, st,buf, dELTA,_0}); 1: by sim.
+  sp;seq 1 1 : (={buf, offset, lEN, st,buf, dELTA,_0}); 1: by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA,_0}); 1: by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA,_0,t256_0,t256_1,t256_2,t256_3}); by sim.
+  by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA,_0,t256_0,t256_1,t256_2,t256_3}); by sim.
+  by sim.
+  seq 1 1 : (={buf, offset, lEN, st,buf, dELTA}); 1: by sim.
+  sp;seq 1 1 : (={buf, offset, lEN, st,buf, dELTA}); 1: by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA}); 1: by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA,t256_0,t256_1,t256_2,t256_3}); by sim.
+  by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA,t256_0,t256_1,t256_2,t256_3}); by sim.
+  by sim.
+qed.
+
+equiv aux_dumpstate32_xkem_clean :
+  Xkem_avx2_clean.M.a32____dumpstate_array_avx2 ~ Xkem_avx2.M.a32____dumpstate_array_avx2 :
+   ={buf, offset, lEN, st} ==> ={res}.
+proc => /=.
+  sp;if;1: by auto.
+  seq 1 1 : (={buf, offset, lEN, st,buf, dELTA,_0}); 1: by sim.
+  sp;seq 1 1 : (={buf, offset, lEN, st,buf, dELTA,_0}); 1: by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA,_0}); 1: by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA,_0,t256_0,t256_1,t256_2,t256_3}); by sim.
+  by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA,_0,t256_0,t256_1,t256_2,t256_3}); by sim.
+  by sim.
+  seq 1 1 : (={buf, offset, lEN, st,buf, dELTA}); 1: by sim.
+  sp;seq 1 1 : (={buf, offset, lEN, st,buf, dELTA}); 1: by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA}); 1: by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA,t256_0,t256_1,t256_2,t256_3}); by sim.
+  by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA,t256_0,t256_1,t256_2,t256_3}); by sim.
+  by sim.
+qed.
+
+equiv aux_dumpstate96_xkem_clean :
+  Xkem_avx2_clean.M.a96____dumpstate_array_avx2 ~ Xkem_avx2.M.a96____dumpstate_array_avx2 :
+   ={buf, offset, lEN, st} ==> ={res}.
+proc => /=.
+  sp;if;1: by auto.
+  seq 1 1 : (={buf, offset, lEN, st,buf, dELTA,_0}); 1: by sim.
+  sp;seq 1 1 : (={buf, offset, lEN, st,buf, dELTA,_0}); 1: by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA,_0}); 1: by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA,_0,t256_0,t256_1,t256_2,t256_3}); by sim.
+  by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA,_0,t256_0,t256_1,t256_2,t256_3}); by sim.
+  by sim.
+  seq 1 1 : (={buf, offset, lEN, st,buf, dELTA}); 1: by sim.
+  sp;seq 1 1 : (={buf, offset, lEN, st,buf, dELTA}); 1: by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA}); 1: by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA,t256_0,t256_1,t256_2,t256_3}); by sim.
+  by sim.
+  sp;if;1: by auto.
+  sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA,t256_0,t256_1,t256_2,t256_3}); by sim.
+  by sim.
+qed.
+
+equiv aux_invntt_xkem :
+  Jkem_avx2_stack.M._poly_invntt ~ Xkem_avx2.M._poly_invntt : ={arg} ==> ={res}.
+proc.
+  by unroll for {1} ^while; unroll for {2} ^while; sim.
+qed.
+
+equiv aux_invntt_xkem_clean :
+  Xkem_avx2_clean.M._poly_invntt ~ Xkem_avx2.M._poly_invntt : ={arg} ==> ={res}.
+proc.
+  by unroll for {1} ^while; unroll for {2} ^while; sim.
+qed.
+
+lemma mlkem_kg_equiv:
+  equiv [Jkem_avx2_stack.M.jade_kem_mlkem_mlkem768_amd64_avx2_keypair_derand ~ Xkem_avx2.M.jade_kem_mlkem_mlkem768_amd64_avx2_keypair_derand: ={arg} ==> ={res}].
+proof.
+    proc => />. inline __crypto_kem_keypair_jazz __indcpa_keypair.
+    sim (Jkem_avx2_stack.M.a32____dumpstate_array_avx2 ~ Xkem_avx2.M.a32____dumpstate_array_avx2 : true)
+    (Jkem_avx2_stack.M.aBUFLEN____dumpstate_array_avx2 ~ Xkem_avx2.M.aBUFLEN____dumpstate_array_avx2 : true) (Jkem_avx2_stack.M.a64____dumpstate_array_avx2 ~ Xkem_avx2.M.a64____dumpstate_array_avx2 : true)
+    (Jkem_avx2_stack.M.aBUFLEN____dumpstate_array_avx2 ~ Xkem_avx2.M.aBUFLEN____dumpstate_array_avx2 : true) => /=.
+    apply aux_dumpstate_xkem. apply aux_buflen_dumpstate1_xkem. apply aux_dumpstate32_xkem.
+qed.
+
+lemma mlkem_enc_equiv:
+  equiv [Jkem_avx2_stack.M.jade_kem_mlkem_mlkem768_amd64_avx2_enc_derand ~ Xkem_avx2.M.jade_kem_mlkem_mlkem768_amd64_avx2_enc_derand: ={arg} ==> ={res}].
+proof.
+    proc => />. inline __crypto_kem_enc_jazz __indcpa_enc.
+    sim (Jkem_avx2_stack.M._poly_invntt ~ Xkem_avx2.M._poly_invntt : (true))
+    (Jkem_avx2_stack.M.a32____dumpstate_array_avx2 ~ Xkem_avx2.M.a32____dumpstate_array_avx2 : true)
+    (Jkem_avx2_stack.M.a64____dumpstate_array_avx2 ~ Xkem_avx2.M.a64____dumpstate_array_avx2 : true)
+    (Jkem_avx2_stack.M.aBUFLEN____dumpstate_array_avx2 ~ Xkem_avx2.M.aBUFLEN____dumpstate_array_avx2 : true) => /=.
+    apply aux_dumpstate32_xkem. apply aux_dumpstate_xkem. apply aux_buflen_dumpstate1_xkem. apply aux_invntt_xkem.
+qed.
+
+lemma mlkem_dec_equiv:
+  equiv [Jkem_avx2_stack.M.jade_kem_mlkem_mlkem768_amd64_avx2_dec ~ Xkem_avx2.M.jade_kem_mlkem_mlkem768_amd64_avx2_dec: ={arg} ==> ={res}].
+proof.
+  proc => />. inline __crypto_kem_dec_jazz __indcpa_dec.
+  sim (Jkem_avx2_stack.M._poly_invntt ~ Xkem_avx2.M._poly_invntt : (true))
+  (Jkem_avx2_stack.M.a32____dumpstate_array_avx2 ~ Xkem_avx2.M.a32____dumpstate_array_avx2 : true)
+  (Jkem_avx2_stack.M.a64____dumpstate_array_avx2 ~ Xkem_avx2.M.a64____dumpstate_array_avx2 : true)
+  (Jkem_avx2_stack.M.aBUFLEN____dumpstate_array_avx2 ~ Xkem_avx2.M.aBUFLEN____dumpstate_array_avx2 : true) => /=.
+  apply aux_dumpstate_xkem. apply aux_buflen_dumpstate1_xkem. apply aux_invntt_xkem. apply aux_dumpstate32_xkem.
+qed.
+
+lemma eq_xwing_clean_kg:
+  equiv [Xkem_avx2_clean.M.jade_kem_xwing_xwing_amd64_avx2_keypair_derand ~ Xkem_avx2.M.jade_kem_xwing_xwing_amd64_avx2_keypair_derand : ={arg} ==> ={res}].
+proof.
+    proc => />. wp; sp.
+    inline {1} 1. inline {2} 1.
+    sim (Jkem_avx2_stack.M.jade_kem_mlkem_mlkem768_amd64_avx2_keypair_derand ~ Xkem_avx2.M.jade_kem_mlkem_mlkem768_amd64_avx2_keypair_derand : true)
+   (Xkem_avx2_clean.M.a32____dumpstate_array_avx2 ~ Xkem_avx2.M.a32____dumpstate_array_avx2 : true)
+   (Xkem_avx2_clean.M.a96____dumpstate_array_avx2 ~ Xkem_avx2.M.a96____dumpstate_array_avx2 : true)
+   (Xkem_avx2_clean.M.a64____dumpstate_array_avx2 ~ Xkem_avx2.M.a64____dumpstate_array_avx2 : true)
+   (Xkem_avx2_clean.M.aBUFLEN____dumpstate_array_avx2 ~ Xkem_avx2.M.aBUFLEN____dumpstate_array_avx2 : true) => /=. apply aux_dumpstate96_xkem_clean. proc *. call mlkem_kg_equiv. auto => />.
+qed.
+
+lemma eq_xwing_clean_enc:
+  equiv [Xkem_avx2_clean.M.jade_kem_xwing_xwing_amd64_avx2_enc_derand ~ Xkem_avx2.M.jade_kem_xwing_xwing_amd64_avx2_enc_derand : ={arg} ==> ={res}].
+proof.
+    proc => />. wp; sp.
+    inline {1} 1. inline {2} 1.
+    sim (Jkem_avx2_stack.M.jade_kem_mlkem_mlkem768_amd64_avx2_enc_derand ~ Xkem_avx2.M.jade_kem_mlkem_mlkem768_amd64_avx2_enc_derand : true)
+   (Xkem_avx2_clean.M.a32____dumpstate_array_avx2 ~ Xkem_avx2.M.a32____dumpstate_array_avx2 : true)
+   (Xkem_avx2_clean.M.a96____dumpstate_array_avx2 ~ Xkem_avx2.M.a96____dumpstate_array_avx2 : true)
+   (Xkem_avx2_clean.M.a64____dumpstate_array_avx2 ~ Xkem_avx2.M.a64____dumpstate_array_avx2 : true)
+   (Xkem_avx2_clean.M.aBUFLEN____dumpstate_array_avx2 ~ Xkem_avx2.M.aBUFLEN____dumpstate_array_avx2 : true) => /=. proc *. call mlkem_enc_equiv. auto => />.  apply aux_dumpstate32_xkem_clean.
+qed.
+
+lemma eq_xwing_clean_dec:
+  equiv [Xkem_avx2_clean.M.jade_kem_xwing_xwing_amd64_avx2_dec ~ Xkem_avx2.M.jade_kem_xwing_xwing_amd64_avx2_dec : ={arg} ==> ={res}].
+proof.
+    proc => />. wp; sp.
+    inline {1} 1. inline {2} 1.
+    sim (Jkem_avx2_stack.M.jade_kem_mlkem_mlkem768_amd64_avx2_dec ~ Xkem_avx2.M.jade_kem_mlkem_mlkem768_amd64_avx2_dec : true)
+    (Jkem_avx2_stack.M.jade_kem_mlkem_mlkem768_amd64_avx2_keypair_derand ~ Xkem_avx2.M.jade_kem_mlkem_mlkem768_amd64_avx2_keypair_derand : true)
+   (Xkem_avx2_clean.M.a32____dumpstate_array_avx2 ~ Xkem_avx2.M.a32____dumpstate_array_avx2 : true)
+   (Xkem_avx2_clean.M.a96____dumpstate_array_avx2 ~ Xkem_avx2.M.a96____dumpstate_array_avx2 : true)
+   (Xkem_avx2_clean.M.a64____dumpstate_array_avx2 ~ Xkem_avx2.M.a64____dumpstate_array_avx2 : true)
+   (Xkem_avx2_clean.M.aBUFLEN____dumpstate_array_avx2 ~ Xkem_avx2.M.aBUFLEN____dumpstate_array_avx2 : true) => /=. apply aux_dumpstate96_xkem_clean. proc *. call mlkem_kg_equiv. auto => />. proc *. call mlkem_dec_equiv. auto => />. apply aux_dumpstate32_xkem_clean.
+qed.
 
 lemma xwing_25519_base_mulx_equiv :
   equiv [Xkem_avx2_clean.M.xwing_x25519_base ~ Mulx_scalarmult_s.M.__curve25519_mulx_base :
@@ -659,32 +928,6 @@ proof.
     + do split. smt(). move => [#] H22 H23 H24. smt(). move => [#] H24 H25. do split. smt().
     + move => [#] H28 H29 H30 H31. do split. rewrite tP => i ib. smt(). rewrite tP => i ib. smt().
     auto => />.
-qed.
-
-
-axiom sha_equiv:
-  equiv [Xkem_avx2_clean.M._sha3_256_A128__A6 ~ Xkem_avx2.M._sha3_256_A128__A6: ={arg} ==> ={res}].
-
-axiom shake_equiv:
-  equiv [Xkem_avx2_clean.M._shake256_A96__A32 ~ Xkem_avx2.M._shake256_A96__A32: ={arg} ==> ={res}].
-
-axiom mlkem_kg_equiv:
-  equiv [Jkem_avx2_stack.M.jade_kem_mlkem_mlkem768_amd64_avx2_keypair_derand ~ Xkem_avx2.M.jade_kem_mlkem_mlkem768_amd64_avx2_keypair_derand: ={arg} ==> ={res}].
-
-axiom mlkem_enc_equiv:
-  equiv [Jkem_avx2_stack.M.jade_kem_mlkem_mlkem768_amd64_avx2_enc_derand ~ Xkem_avx2.M.jade_kem_mlkem_mlkem768_amd64_avx2_enc_derand: ={arg} ==> ={res}].
-
-axiom mlkem_dec_equiv:
-  equiv [Jkem_avx2_stack.M.jade_kem_mlkem_mlkem768_amd64_avx2_dec ~ Xkem_avx2.M.jade_kem_mlkem_mlkem768_amd64_avx2_dec: ={arg} ==> ={res}].
-
-lemma eq_xwing_clean_kg:
-  equiv [Xkem_avx2_clean.M.jade_kem_xwing_xwing_amd64_avx2_keypair_derand ~ Xkem_avx2.M.jade_kem_xwing_xwing_amd64_avx2_keypair_derand : ={arg} ==> ={res}].
-proof.
-    proc => />. wp; sp.
-    inline {1} 1. inline {2} 1.
-    wp. sim. call mlkem_kg_equiv.
-    wp. auto => />. sim.
-    call shake_equiv. auto => />.
 qed.
 
 lemma eq_xwing_clean_enc:
