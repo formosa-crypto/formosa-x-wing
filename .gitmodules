@@ -4,6 +4,7 @@
 [submodule "crypto-specs"]
 	path = crypto-specs
 	url = git@github.com:formosa-crypto/crypto-specs.git
+	branch = bdep
 [submodule "formosa-mlkem"]
 	path = formosa-mlkem
 	url = git@github.com:formosa-crypto/formosa-mlkem.git
