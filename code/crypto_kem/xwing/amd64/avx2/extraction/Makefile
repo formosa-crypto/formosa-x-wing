@@ -14,8 +14,7 @@ ec:
 	  -ec jade_kem_xwing_xwing_amd64_avx2_keypair_derand \
 	  -ec jade_kem_xwing_xwing_amd64_avx2_enc_derand \
 	  -ec jade_kem_xwing_xwing_amd64_avx2_dec \
-		$(JINCLUDE_MLKEM) $(JINCLUDE_X25519) $(JINCLUDE_KECCAK) \
-		-oecarray Arrays/
+		$(JINCLUDE_MLKEM) $(JINCLUDE_X25519) $(JINCLUDE_KECCAK)
 
 clean:
 	rm -f *.ec

@@ -1,4 +1,4 @@
-require import AllCore KEM_ROM PROM Distr StdOrder SmtMap List.
+require import AllCore KEM_ROM PROM Distr StdOrder FMap List.
 require (****) NomGroup.
 
 clone import NomGroup as NG.
@@ -979,12 +979,12 @@ section.
         rewrite get_setE /=.
      by smt(fdom_set mem_set mem_empty assoc_none assoc_head get_setE NG.ng_commute).
      by smt(fdom_set mem_set mem_empty assoc_none assoc_head get_setE NG.ng_commute).
-      smt(@SmtMap).
+      smt(@FMap).
 
      + move => *;do split.
         rewrite get_setE /=.
      by smt(fdom_set mem_set mem_empty assoc_none assoc_head get_setE NG.ng_commute).
-  by smt(@SmtMap).
+  by smt(@FMap).
 
   proc;inline *;if;1,2:by auto.
   by auto => />;

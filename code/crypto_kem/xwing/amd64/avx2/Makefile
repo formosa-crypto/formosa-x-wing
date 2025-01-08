@@ -1,8 +1,6 @@
 CC      ?= clang
 CFLAGS := -Wall -Wextra -g -O3 -fomit-frame-pointer
 OS      := $(shell uname -s)
-JASMINC ?= jasminc
-JFLAGS  ?= -lazy-regalloc
 
 JASMINC ?= jasminc
 JFLAGS  ?= -lazy-regalloc

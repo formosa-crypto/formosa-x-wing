@@ -3,16 +3,8 @@ require import AllCore IntDiv CoreMap List Distr.
 from Jasmin require import JModel_x86.
 
 import SLH64.
-require import CorrectnessProof_Mulx Mulx_scalarmult_s Jkem_avx2_stack FIPS202_SHA3.
-require import Array4 Array6 Array8 Array32 Array64 Array96 Array140 Array152 Array1088 Array1120 Array1184 Array1216 Array2400.
-require import WArray4 WArray6 WArray32 WArray64 WArray96 WArray1088 WArray1120 WArray1184 WArray1216 WArray2400.
 
-abbrev xWING_LABEL =
-(Array6.of_list witness
-[(W8.of_int 92); (W8.of_int 46); (W8.of_int 47); (W8.of_int 47);
-(W8.of_int 94); (W8.of_int 92)]).
-
-require import
+from JazzEC require import
 Array1 Array2 Array4 Array5 Array6 Array7 Array8 Array16 Array24 Array25
 Array32 Array33 Array64 Array96 Array128 Array136 Array140 Array144 Array148
 Array152 Array256 Array300 Array384 Array400 Array536 Array768 Array960
@@ -22,6 +14,16 @@ WArray16 WArray32 WArray33 WArray64 WArray96 WArray128 WArray160 WArray192
 WArray200 WArray224 WArray256 WArray384 WArray512 WArray536 WArray800
 WArray960 WArray1088 WArray1120 WArray1152 WArray1184 WArray1216 WArray1536
 WArray2048 WArray2144 WArray2400 WArray4608.
+
+from JazzEC require import Mulx_scalarmult_s Jkem_avx2_stack.
+from CryptoSpecs require import FIPS202_SHA3.
+
+require import CorrectnessProof_Mulx.
+
+abbrev xWING_LABEL =
+(Array6.of_list witness
+[(W8.of_int 92); (W8.of_int 46); (W8.of_int 47); (W8.of_int 47);
+(W8.of_int 94); (W8.of_int 92)]).
 
 abbrev gen_matrix_indexes =
 (Array16.of_list witness

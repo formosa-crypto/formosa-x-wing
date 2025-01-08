@@ -1,4 +1,4 @@
-require import AllCore List Distr DBool PROM FinType SmtMap FSet.
+require import AllCore List Distr DBool PROM FinType FMap FSet.
 require (****) LorR.
 
 abstract theory PKE.

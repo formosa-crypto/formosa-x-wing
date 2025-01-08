@@ -5,7 +5,6 @@ from Jasmin require import JModel_x86.
 import SLH64.
 
 require import Array4 Array5 Array8 Array32.
-
 require import WArray32 WArray40 WArray64.
 
 module M = {
