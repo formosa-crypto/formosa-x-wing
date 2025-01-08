@@ -13,6 +13,7 @@ idirs = CryptoSpecs:crypto-specs/common
 rdirs = CryptoSpecs:crypto-specs/fips202
 rdirs = CryptoSpecs:crypto-specs/ml-kem
 rdirs = Keccak:formosa-25519/proof/amd64
+rdirs = X25519:formosa-25519/proof/crypto_scalarmult
 idirs = JazzEC:crypto-specs/arrays
 idirs = JazzEC:formosa-keccak/proof/amd64/extracted
 idirs = JazzEC:formosa-mlkem/code/jasmin/mlkem_avx2_stack/extraction
