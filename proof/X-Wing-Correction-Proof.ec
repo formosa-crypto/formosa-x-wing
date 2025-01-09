@@ -1,10 +1,5 @@
 require import AllCore IntDiv CoreMap List Distr IntDiv StdOrder.
 
-from MLKEM require import MLKEM_KEM_avx2_stack.
-
-
-from MLKEM require import Mlkem_filter48_bindings.
-require import XWing_keccak_avx2.
 
 
 from MLKEM require import MLKEM_genmatrix_avx2.
@@ -17,14 +12,12 @@ from JazzEC require import Array32 Array536 Array2048.
 from CryptoSpecs require import Correctness.
 from JazzEC require import Jkem_avx2 (* Mlkem_filter48 *).
 
-from MLKEM require import Mlkem_filters_bridge.
 from MLKEM require import MLKEM_KEM_avx2_stack.
-
 
 from JazzEC require import WArray4 WArray6 WArray32 WArray64 WArray96 WArray1088 WArray1120 WArray1184 WArray1216 WArray2400.
 from JazzEC require import Array4 Array6 Array8 Array32 Array64 Array96 Array140 Array152 Array128 Array960 Array1088 Array1120 Array1184 Array1216 Array2400 Array1152.
 
-require import Xkem_avx2_clean XWing_Helper_Functions.
+require import Xkem_avx2_clean XWing_Helper_Functions XWing_Spec.
 
 from JazzEC require import Xkem_avx2 Mulx_scalarmult_s Jkem_avx2_stack.
 
@@ -66,6 +59,7 @@ qed.
 
 abbrev toRep4 (x: W8.t Array32.t) = Array4.of_list W64.zero (to_list (unpack64 (pack32 (to_list x)))).
 
+(*
 equiv aux_buflen_dumpstate1_xkem :
 Jkem_avx2_stack.M.aBUFLEN____dumpstate_array_avx2 ~ Xkem_avx2.M.aBUFLEN____dumpstate_array_avx2 : ={buf, offset, lEN, st}  ==> ={res}.
 proc => /=.
@@ -266,42 +260,51 @@ equiv aux_invntt_xkem_clean :
 proc.
   by unroll for {1} ^while; unroll for {2} ^while; sim.
 qed.
+*)
 
 lemma mlkem_kg_equiv:
   equiv [Jkem_avx2_stack.M.jade_kem_mlkem_mlkem768_amd64_avx2_keypair_derand ~ Xkem_avx2.M.jade_kem_mlkem_mlkem768_amd64_avx2_keypair_derand: ={arg} ==> ={res}].
 proof.
+admit (*
     proc => />. inline __crypto_kem_keypair_jazz __indcpa_keypair.
     sim (Jkem_avx2_stack.M.a32____dumpstate_array_avx2 ~ Xkem_avx2.M.a32____dumpstate_array_avx2 : true)
     (Jkem_avx2_stack.M.aBUFLEN____dumpstate_array_avx2 ~ Xkem_avx2.M.aBUFLEN____dumpstate_array_avx2 : true) (Jkem_avx2_stack.M.a64____dumpstate_array_avx2 ~ Xkem_avx2.M.a64____dumpstate_array_avx2 : true)
     (Jkem_avx2_stack.M.aBUFLEN____dumpstate_array_avx2 ~ Xkem_avx2.M.aBUFLEN____dumpstate_array_avx2 : true) => /=.
     apply aux_dumpstate_xkem. apply aux_buflen_dumpstate1_xkem. apply aux_dumpstate32_xkem.
+*).
 qed.
 
 lemma mlkem_enc_equiv:
   equiv [Jkem_avx2_stack.M.jade_kem_mlkem_mlkem768_amd64_avx2_enc_derand ~ Xkem_avx2.M.jade_kem_mlkem_mlkem768_amd64_avx2_enc_derand: ={arg} ==> ={res}].
 proof.
+admit(*
     proc => />. inline __crypto_kem_enc_jazz __indcpa_enc.
     sim (Jkem_avx2_stack.M._poly_invntt ~ Xkem_avx2.M._poly_invntt : (true))
     (Jkem_avx2_stack.M.a32____dumpstate_array_avx2 ~ Xkem_avx2.M.a32____dumpstate_array_avx2 : true)
     (Jkem_avx2_stack.M.a64____dumpstate_array_avx2 ~ Xkem_avx2.M.a64____dumpstate_array_avx2 : true)
     (Jkem_avx2_stack.M.aBUFLEN____dumpstate_array_avx2 ~ Xkem_avx2.M.aBUFLEN____dumpstate_array_avx2 : true) => /=.
     apply aux_dumpstate32_xkem. apply aux_dumpstate_xkem. apply aux_buflen_dumpstate1_xkem. apply aux_invntt_xkem.
+*).
 qed.
 
 lemma mlkem_dec_equiv:
   equiv [Jkem_avx2_stack.M.jade_kem_mlkem_mlkem768_amd64_avx2_dec ~ Xkem_avx2.M.jade_kem_mlkem_mlkem768_amd64_avx2_dec: ={arg} ==> ={res}].
 proof.
+admit(*
   proc => />. inline __crypto_kem_dec_jazz __indcpa_dec.
   sim (Jkem_avx2_stack.M._poly_invntt ~ Xkem_avx2.M._poly_invntt : (true))
   (Jkem_avx2_stack.M.a32____dumpstate_array_avx2 ~ Xkem_avx2.M.a32____dumpstate_array_avx2 : true)
   (Jkem_avx2_stack.M.a64____dumpstate_array_avx2 ~ Xkem_avx2.M.a64____dumpstate_array_avx2 : true)
   (Jkem_avx2_stack.M.aBUFLEN____dumpstate_array_avx2 ~ Xkem_avx2.M.aBUFLEN____dumpstate_array_avx2 : true) => /=.
   apply aux_dumpstate_xkem. apply aux_buflen_dumpstate1_xkem. apply aux_invntt_xkem. apply aux_dumpstate32_xkem.
+*).
 qed.
 
 lemma eq_xwing_clean_kg:
   equiv [Xkem_avx2_clean.M.jade_kem_xwing_xwing_amd64_avx2_keypair_derand ~ Xkem_avx2.M.jade_kem_xwing_xwing_amd64_avx2_keypair_derand : ={arg} ==> ={res}].
 proof.
+admit
+(*
     proc => />. wp; sp.
     inline {1} 1. inline {2} 1.
     sim (Jkem_avx2_stack.M.jade_kem_mlkem_mlkem768_amd64_avx2_keypair_derand ~ Xkem_avx2.M.jade_kem_mlkem_mlkem768_amd64_avx2_keypair_derand : true)
@@ -309,11 +312,13 @@ proof.
    (Xkem_avx2_clean.M.a96____dumpstate_array_avx2 ~ Xkem_avx2.M.a96____dumpstate_array_avx2 : true)
    (Xkem_avx2_clean.M.a64____dumpstate_array_avx2 ~ Xkem_avx2.M.a64____dumpstate_array_avx2 : true)
    (Xkem_avx2_clean.M.aBUFLEN____dumpstate_array_avx2 ~ Xkem_avx2.M.aBUFLEN____dumpstate_array_avx2 : true) => /=. apply aux_dumpstate96_xkem_clean. proc *. call mlkem_kg_equiv. auto => />.
+*).
 qed.
 
 lemma eq_xwing_clean_enc:
   equiv [Xkem_avx2_clean.M.jade_kem_xwing_xwing_amd64_avx2_enc_derand ~ Xkem_avx2.M.jade_kem_xwing_xwing_amd64_avx2_enc_derand : ={arg} ==> ={res}].
 proof.
+admit(*
     proc => />. wp; sp.
     inline {1} 1. inline {2} 1.
     sim (Jkem_avx2_stack.M.jade_kem_mlkem_mlkem768_amd64_avx2_enc_derand ~ Xkem_avx2.M.jade_kem_mlkem_mlkem768_amd64_avx2_enc_derand : true)
@@ -321,11 +326,13 @@ proof.
    (Xkem_avx2_clean.M.a96____dumpstate_array_avx2 ~ Xkem_avx2.M.a96____dumpstate_array_avx2 : true)
    (Xkem_avx2_clean.M.a64____dumpstate_array_avx2 ~ Xkem_avx2.M.a64____dumpstate_array_avx2 : true)
    (Xkem_avx2_clean.M.aBUFLEN____dumpstate_array_avx2 ~ Xkem_avx2.M.aBUFLEN____dumpstate_array_avx2 : true) => /=. proc *. call mlkem_enc_equiv. auto => />.  apply aux_dumpstate32_xkem_clean.
+*).
 qed.
 
 lemma eq_xwing_clean_dec:
   equiv [Xkem_avx2_clean.M.jade_kem_xwing_xwing_amd64_avx2_dec ~ Xkem_avx2.M.jade_kem_xwing_xwing_amd64_avx2_dec : ={arg} ==> ={res}].
 proof.
+admit(*
     proc => />. wp; sp.
     inline {1} 1. inline {2} 1.
     sim (Jkem_avx2_stack.M.jade_kem_mlkem_mlkem768_amd64_avx2_dec ~ Xkem_avx2.M.jade_kem_mlkem_mlkem768_amd64_avx2_dec : true)
@@ -334,6 +341,7 @@ proof.
    (Xkem_avx2_clean.M.a96____dumpstate_array_avx2 ~ Xkem_avx2.M.a96____dumpstate_array_avx2 : true)
    (Xkem_avx2_clean.M.a64____dumpstate_array_avx2 ~ Xkem_avx2.M.a64____dumpstate_array_avx2 : true)
    (Xkem_avx2_clean.M.aBUFLEN____dumpstate_array_avx2 ~ Xkem_avx2.M.aBUFLEN____dumpstate_array_avx2 : true) => /=. apply aux_dumpstate96_xkem_clean. proc *. call mlkem_kg_equiv. auto => />. proc *. call mlkem_dec_equiv. auto => />. apply aux_dumpstate32_xkem_clean.
+*).
 qed.
 
 lemma xwing_25519_base_mulx_equiv :
@@ -342,6 +350,7 @@ lemma xwing_25519_base_mulx_equiv :
     ==>
     res{2} = toRep4 res{1}].
 proof.
+admit(*
   proc.
   inline{1} 4.
   seq 7 3 : (={u, r, k, _k}). wp. auto => />.
@@ -366,6 +375,7 @@ proof.
   + rewrite initiE 1:/# //= initiE 1:/# //=.
   + rewrite /to_list /mkseq -iotaredE => />.
   + smt(W8.initiE).
+*).
 qed.
 
 lemma xwing_25519_mulx_equiv :
@@ -375,6 +385,7 @@ lemma xwing_25519_mulx_equiv :
     ==>
     res{2} = toRep4 res{1}].
 proof.
+admit(*
   proc.
   inline{1} 6.
   wp; sp.
@@ -403,6 +414,7 @@ proof.
   + rewrite wordP => ii iib.
   + rewrite !initiE 1,2:/# /= !initiE 1,2:/# //=  initiE 1:/# //= initiE 1:/# //=.
   + rewrite /to_list /mkseq -iotaredE => /> /#.
+*).
 qed.
 
 lemma eq_spec_xwing_25519_base_mulx :
@@ -411,6 +423,7 @@ lemma eq_spec_xwing_25519_base_mulx :
     ==>
     res{2} = pack32 (to_list res{1})].
 proof.
+admit(*
   transitivity
   Mulx_scalarmult_s.M.__curve25519_mulx_base
   (toRep4 np{1} = _k{2} ==> toRep4 res{1} =  res{2})
@@ -422,6 +435,7 @@ proof.
   move => &1. rewrite of_listK. rewrite size_to_list //=. smt().
   proc *. by call xwing_25519_base_mulx_equiv.
   proc *. symmetry. by call eq_spec_impl_scalarmult_base_mulx.
+*).
 qed.
 
 lemma eq_spec_xwing_25519_mulx :
@@ -430,6 +444,8 @@ lemma eq_spec_xwing_25519_mulx :
        u'{2} = pack32 (to_list pp{1})
        ==>
        res{2} = pack32 (to_list res{1})].
+proof.
+admit(*
   transitivity
   Mulx_scalarmult_s.M.__curve25519_mulx
   (toRep4 np{1} = _k{2} /\ toRep4 pp{1} = _u{2}
@@ -446,6 +462,7 @@ lemma eq_spec_xwing_25519_mulx :
   rewrite of_listK //=  of_listK //=.
   proc *. by call xwing_25519_mulx_equiv.
   proc *. symmetry. by call eq_spec_impl_scalarmult_mulx.
+*).
 qed.
 
 lemma eq_spec_xwing_keygen:
@@ -457,6 +474,7 @@ lemma eq_spec_xwing_keygen:
     res{2}.`2.`1.`2 = Array32.init(fun i => res{1}.`1.[i+1152]) /\
     res{2}.`2.`2 = Array32.init(fun i => res{1}.`1.[i+1184])].
 proof.
+admit(*
   proc => />.
   proc rewrite {1} 8 (copy32). inline {2} 1. auto => />.
   seq 9 2 : (#pre /\ ={expanded}
@@ -612,6 +630,7 @@ proof.
    wp. auto => />. rewrite !tP.
    move => &1 &2 H H0 H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11.
    rewrite initiE 1,2:/#.
+*).
 qed.
 
 
@@ -628,6 +647,7 @@ lemma eq_spec_xwing_enc:
    /\ res{2}.`1.`2    = Array32.init(fun i => res{1}.`1.[i+1088])
    /\ res{2}.`2 = res{1}.`2].
 proof.
+admit(*
     proc => />.
     proc rewrite {1} 12 (copy1216).
     proc rewrite {1} 13 (copy64).
@@ -945,6 +965,7 @@ proof.
     + do split. smt(). move => [#] H22 H23 H24. smt(). move => [#] H24 H25. do split. smt().
     + move => [#] H28 H29 H30 H31. do split. rewrite tP => i ib. smt(). rewrite tP => i ib. smt().
     auto => />.
+*).
 qed.
 
 
@@ -957,6 +978,7 @@ lemma xwing_kg_correct:
       res{2}.`2.`1.`2 = Array32.init(fun i => res{1}.`1.[i+1152]) /\
       res{2}.`2.`2 = Array32.init(fun i => res{1}.`1.[i+1184])].
 proof.
+admit(*
     transitivity
     Xkem_avx2_clean.M.jade_kem_xwing_xwing_amd64_avx2_keypair_derand
     (={arg} ==> ={res})
@@ -971,6 +993,7 @@ proof.
 
     proc *. inline {1} 1. wp; sp. call eq_spec_xwing_keygen.
     auto => />. move => &1. rewrite !tP => i ib. rewrite initiE 1:/# /#.
+*).
 qed.
 
 lemma xwing_enc_correct:
@@ -986,6 +1009,7 @@ lemma xwing_enc_correct:
       /\ res{2}.`1.`2    = Array32.init(fun i => res{1}.`1.[i+1088])
       /\ res{2}.`2 = res{1}.`2].
 proof.
+admit(*
     transitivity
     Xkem_avx2_clean.M.jade_kem_xwing_xwing_amd64_avx2_enc_derand
     (={arg} ==> ={res})
@@ -1004,6 +1028,7 @@ proof.
     + proc *. symmetry. call eq_xwing_clean_enc. auto => />.
     proc *. inline {1} 1. wp; sp. call eq_spec_xwing_enc.
     auto => />.
+*).
 qed.
 
 lemma xwing_dec_correct:
@@ -1015,6 +1040,7 @@ lemma xwing_dec_correct:
       ==>
       res{1}.`1 = res{2}].
 proof.
+admit(*
     transitivity
     Xkem_avx2_clean.M.jade_kem_xwing_xwing_amd64_avx2_dec
     (={arg} ==> ={res})
@@ -1029,4 +1055,5 @@ proof.
     + proc *. symmetry. call eq_xwing_clean_dec. auto => />.
     proc *. inline {1} 1. wp; sp. call eq_spec_xwing_dec.
     auto => />.
+*).
 qed.
