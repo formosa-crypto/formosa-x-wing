@@ -248,6 +248,7 @@ proc => /=.
   sp;seq 1 1 : (={t,t128_0,t128_1,buf, offset, lEN, st,buf, dELTA,t256_0,t256_1,t256_2,t256_3}); by sim.
   by sim.
 qed.
+*)
 
 equiv aux_invntt_xkem :
   Jkem_avx2_stack.M._poly_invntt ~ Xkem_avx2.M._poly_invntt : ={arg} ==> ={res}.
@@ -260,58 +261,37 @@ equiv aux_invntt_xkem_clean :
 proc.
   by unroll for {1} ^while; unroll for {2} ^while; sim.
 qed.
-*)
 
 lemma mlkem_kg_equiv:
   equiv [Jkem_avx2_stack.M.jade_kem_mlkem_mlkem768_amd64_avx2_keypair_derand ~ Xkem_avx2.M.jade_kem_mlkem_mlkem768_amd64_avx2_keypair_derand: ={arg} ==> ={res}].
 proof.
-admit (*
-    proc => />. inline __crypto_kem_keypair_jazz __indcpa_keypair.
-    sim (Jkem_avx2_stack.M.a32____dumpstate_array_avx2 ~ Xkem_avx2.M.a32____dumpstate_array_avx2 : true)
-    (Jkem_avx2_stack.M.aBUFLEN____dumpstate_array_avx2 ~ Xkem_avx2.M.aBUFLEN____dumpstate_array_avx2 : true) (Jkem_avx2_stack.M.a64____dumpstate_array_avx2 ~ Xkem_avx2.M.a64____dumpstate_array_avx2 : true)
-    (Jkem_avx2_stack.M.aBUFLEN____dumpstate_array_avx2 ~ Xkem_avx2.M.aBUFLEN____dumpstate_array_avx2 : true) => /=.
-    apply aux_dumpstate_xkem. apply aux_buflen_dumpstate1_xkem. apply aux_dumpstate32_xkem.
-*).
+by proc => />; inline __crypto_kem_keypair_jazz __indcpa_keypair; sim.
 qed.
 
 lemma mlkem_enc_equiv:
   equiv [Jkem_avx2_stack.M.jade_kem_mlkem_mlkem768_amd64_avx2_enc_derand ~ Xkem_avx2.M.jade_kem_mlkem_mlkem768_amd64_avx2_enc_derand: ={arg} ==> ={res}].
 proof.
-admit(*
-    proc => />. inline __crypto_kem_enc_jazz __indcpa_enc.
-    sim (Jkem_avx2_stack.M._poly_invntt ~ Xkem_avx2.M._poly_invntt : (true))
-    (Jkem_avx2_stack.M.a32____dumpstate_array_avx2 ~ Xkem_avx2.M.a32____dumpstate_array_avx2 : true)
-    (Jkem_avx2_stack.M.a64____dumpstate_array_avx2 ~ Xkem_avx2.M.a64____dumpstate_array_avx2 : true)
-    (Jkem_avx2_stack.M.aBUFLEN____dumpstate_array_avx2 ~ Xkem_avx2.M.aBUFLEN____dumpstate_array_avx2 : true) => /=.
-    apply aux_dumpstate32_xkem. apply aux_dumpstate_xkem. apply aux_buflen_dumpstate1_xkem. apply aux_invntt_xkem.
-*).
+proc => />; inline __crypto_kem_enc_jazz __indcpa_enc.
+sim (Jkem_avx2_stack.M._poly_invntt ~ Xkem_avx2.M._poly_invntt : (true)).
+by apply aux_invntt_xkem.
 qed.
 
 lemma mlkem_dec_equiv:
   equiv [Jkem_avx2_stack.M.jade_kem_mlkem_mlkem768_amd64_avx2_dec ~ Xkem_avx2.M.jade_kem_mlkem_mlkem768_amd64_avx2_dec: ={arg} ==> ={res}].
 proof.
-admit(*
-  proc => />. inline __crypto_kem_dec_jazz __indcpa_dec.
-  sim (Jkem_avx2_stack.M._poly_invntt ~ Xkem_avx2.M._poly_invntt : (true))
-  (Jkem_avx2_stack.M.a32____dumpstate_array_avx2 ~ Xkem_avx2.M.a32____dumpstate_array_avx2 : true)
-  (Jkem_avx2_stack.M.a64____dumpstate_array_avx2 ~ Xkem_avx2.M.a64____dumpstate_array_avx2 : true)
-  (Jkem_avx2_stack.M.aBUFLEN____dumpstate_array_avx2 ~ Xkem_avx2.M.aBUFLEN____dumpstate_array_avx2 : true) => /=.
-  apply aux_dumpstate_xkem. apply aux_buflen_dumpstate1_xkem. apply aux_invntt_xkem. apply aux_dumpstate32_xkem.
-*).
+proc => />; inline __crypto_kem_dec_jazz __indcpa_dec.
+sim (Jkem_avx2_stack.M._poly_invntt ~ Xkem_avx2.M._poly_invntt : (true)).
+by apply aux_invntt_xkem.
 qed.
 
 lemma eq_xwing_clean_kg:
   equiv [Xkem_avx2_clean.M.jade_kem_xwing_xwing_amd64_avx2_keypair_derand ~ Xkem_avx2.M.jade_kem_xwing_xwing_amd64_avx2_keypair_derand : ={arg} ==> ={res}].
 proof.
-admit
 (*
-    proc => />. wp; sp.
-    inline {1} 1. inline {2} 1.
-    sim (Jkem_avx2_stack.M.jade_kem_mlkem_mlkem768_amd64_avx2_keypair_derand ~ Xkem_avx2.M.jade_kem_mlkem_mlkem768_amd64_avx2_keypair_derand : true)
-   (Xkem_avx2_clean.M.a32____dumpstate_array_avx2 ~ Xkem_avx2.M.a32____dumpstate_array_avx2 : true)
-   (Xkem_avx2_clean.M.a96____dumpstate_array_avx2 ~ Xkem_avx2.M.a96____dumpstate_array_avx2 : true)
-   (Xkem_avx2_clean.M.a64____dumpstate_array_avx2 ~ Xkem_avx2.M.a64____dumpstate_array_avx2 : true)
-   (Xkem_avx2_clean.M.aBUFLEN____dumpstate_array_avx2 ~ Xkem_avx2.M.aBUFLEN____dumpstate_array_avx2 : true) => /=. apply aux_dumpstate96_xkem_clean. proc *. call mlkem_kg_equiv. auto => />.
+proc => />; wp; sp.
+inline {1} 1; inline {2} 1.
+sim (Jkem_avx2_stack.M.jade_kem_mlkem_mlkem768_amd64_avx2_keypair_derand ~ Xkem_avx2.M.jade_kem_mlkem_mlkem768_amd64_avx2_keypair_derand : true).
+wp. call mlkem_kg_equiv.
 *).
 qed.
 

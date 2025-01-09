@@ -54,7 +54,8 @@ fn _crypto_xkem_keypair_derand_jazz(
   return pkp, skp;
 }
 
-/*
+/* TODO: sort out the problem with register allocation in these functions...
+
 fn _crypto_xkem_enc_derand_jazz(
     reg mut ptr u8[XWING_CIPHERTEXTBYTES] ctp,
     reg mut ptr u8[XWING_MSGBYTES] shkp,
@@ -62,83 +63,132 @@ fn _crypto_xkem_enc_derand_jazz(
     reg const ptr u8[XWING_ENC_SEEDBYTES] eseed)
   -> reg ptr u8[XWING_CIPHERTEXTBYTES], reg ptr u8[XWING_MSGBYTES]
 {
-  inline int i;
-  reg u64 t64;
-//  stack u8[XWING_PUBLICKEYBYTES] spkp;
   stack u8[XWING_MSGBYTES] ss;
-//  stack u8[XWING_ENC_SEEDBYTES] seseed;
-  stack u8[MLKEM_SYMBYTES] seed_mlkem;
-  stack u8[X25519_BYTES] ct_x25519;
-  stack u8[X25519_BYTES] pk_x25519;
-  stack u8[X25519_BYTES] ss_x25519_s;
-  reg ptr u8[X25519_BYTES] ss_x25519;
-  stack u8[X25519_BYTES] ek_x25519;
-  stack u8[MLKEM_CIPHERTEXTBYTES] ct_mlkem;
-  stack u8[MLKEM_PUBLICKEYBYTES] pk_mlkem;
+  reg ptr u8[MLKEM_SYMBYTES] seed_mlkem;
+  reg ptr u8[MLKEM_CIPHERTEXTBYTES] ct_mlkem;
+  reg ptr u8[MLKEM_PUBLICKEYBYTES] pk_mlkem;
   stack u8[MLKEM_SYMBYTES] ss_mlkem_s;
   reg ptr u8[MLKEM_SYMBYTES] ss_mlkem;
+  reg ptr u8[X25519_BYTES] ct_x25519;
+  reg ptr u8[X25519_BYTES] pk_x25519;
+  reg ptr u8[X25519_BYTES] ek_x25519;
 
-  // ct_X = X25519(ek_X, X25519_BASE)
-  ct_x25519 = ctp[MLKEM_CIPHERTEXTBYTES:X25519_BYTES]
-  ct_x25519 = xwing_x25519_base(ct_x25519, ek_x25519);
-  ctp[MLKEM_CIPHERTEXTBYTES:X25519_BYTES] = ct_x25519;
-
-  // ss_X = X25519(ek_X, pk_X)
-  pk_x25519 = pkp[MLKEM_PUBLICKEYBYTES:X25519_BYTES];
-  ek_x25519 = eseed[MLKEM_SYMBYTES:X25519_BYTES];
-  ss_x25519 = ss_x25519_s;
-  ss_x25519 = xwing_x25519(ss_x25519, ek_x25519, pk_x25519);
-  ss_x25519_s = ss_x25519;
-
-  // (ct_M, ss_M) = ML-KEM-768.EncapsDerand(pk_M, eseed[0:32])
-  seed_mlkem = eseed[0:MLKEM_SYMBYTES];
-  ct_mlkem = ctp[0:MLKEM_CIPHERTEXTBYTES];
-  ss_mlkem = ss_mlkem_s;
-  ct_mlkem, ss_mlkem, _ =  jade_kem_mlkem_mlkem768_amd64_avx2_enc_derand(ct_mlkem, ss_mlkem, pk_mlkem, seed_mlkem);
-  ctp[0:MLKEM_CIPHERTEXTBYTES] = ct_mlkem;
-
-  // ss = Combiner(ss_M, ss_X, ct_X, pk_X)
-  shkp = _sha3_256_A128__A6(shkp, ss_mlkem, ss_x25519, ct_x25519, pk_x25519);
-
-
-  () = #spill(ctp, shkp, pkp, eseed);
-
-  spkp = #copy(pkp);
-  seseed = #copy(eseed);
-
-
-  // pk_M = pk[0:1184]
-  // pk_X = pk[1184:1216] and in = [0 0 0 pk_x]
-  pk_mlkem = spkp[0:MLKEM_PUBLICKEYBYTES];
-  pk_x25519 = spkp[MLKEM_PUBLICKEYBYTES:X25519_BYTES];
-  // ek_X = eseed[32:64]
-  ek_x25519 = seseed[MLKEM_SYMBYTES:X25519_BYTES];
-
+  () = #spill(shkp);
+  () = #spill(pkp);
   // ct_X = X25519(ek_X, X25519_BASE)
   ct_x25519 = ctp[MLKEM_CIPHERTEXTBYTES:X25519_BYTES];
+  ek_x25519 = eseed[MLKEM_SYMBYTES:X25519_BYTES];
+  () = #spill(eseed);
+  () = #spill(ctp);
   ct_x25519 = xwing_x25519_base(ct_x25519, ek_x25519);
+  () = #unspill(ctp);
   ctp[MLKEM_CIPHERTEXTBYTES:X25519_BYTES] = ct_x25519;
 
-  // ss_X = X25519(ek_X, pk_X)
-  ss_x25519 = xwing_x25519(ss_x25519, ek_x25519, pk_x25519);
   // (ct_M, ss_M) = ML-KEM-768.EncapsDerand(pk_M, eseed[0:32])
-
-  seed_mlkem = seseed[0:MLKEM_SYMBYTES];
+  () = #unspill(eseed);
+  seed_mlkem = eseed[0:MLKEM_SYMBYTES];
+  () = #unspill(pkp);
+  pk_mlkem = pkp[0:MLKEM_PUBLICKEYBYTES];
   ct_mlkem = ctp[0:MLKEM_CIPHERTEXTBYTES];
-  ct_mlkem, ss_mlkem, _ =  jade_kem_mlkem_mlkem768_amd64_avx2_enc_derand(ct_mlkem, ss_mlkem, pk_mlkem, seed_mlkem);
+  ss_mlkem = ss_mlkem_s;
+  () = #spill(pkp,eseed);
+  () = #spill(ctp);
+  ct_mlkem, ss_mlkem, _ = jade_kem_mlkem_mlkem768_amd64_avx2_enc_derand(ct_mlkem, ss_mlkem, pk_mlkem, seed_mlkem);
+  () = #unspill(ctp);
+  ss_mlkem_s = ss_mlkem;
   ctp[0:MLKEM_CIPHERTEXTBYTES] = ct_mlkem;
 
+  () = #unspill(pkp,eseed);
+  ek_x25519 = eseed[MLKEM_SYMBYTES:X25519_BYTES];
+  pk_x25519 = pkp[MLKEM_PUBLICKEYBYTES:X25519_BYTES];
+  () = #unspill(shkp);
+  () = #spill(ctp);
+  // ss_X = X25519(ek_X, pk_X)
+  shkp = xwing_x25519(shkp, ek_x25519, pk_x25519);
+  
+  // ss = Combiner(ss_M, ss_X, ct_X, pk_X)
+  ss_mlkem = ss_mlkem_s;
+  shkp = _sha3_256_A128__A6(shkp, ss_mlkem, ct_x25519, pk_x25519);
 
-  () = #unspill(shkp, ctp);
-
-  // ct = concat(ct_M, ct_X)
-  //for i = 0 to MLKEM_CIPHERTEXTBYTES/8 { t64 = ct_mlkem[u64 i]; ctp[u64 i] = t64;  }
-  for i = 0 to X25519_BYTES/8 { t64 = ct_x25519[u64 i]; ctp[u64 MLKEM_CIPHERTEXTBYTES/8 + i ] = t64;  }
-
-  for i = 0 to XWING_MSGBYTES/8 { t64 = ss[u64 i]; shkp[u64 i] = t64;  }
+  () = #unspill(ctp);
 
   return ctp, shkp;
 }
+
+fn _crypto_xkem_dec_jazz(
+  reg mut ptr u8[XWING_MSGBYTES] shkp,
+  reg const ptr u8[XWING_CIPHERTEXTBYTES] ctp,
+  reg const ptr u8[XWING_SECRETKEYBYTES] skp) // sk = seed, so call it randomness for clarity of its purpose
+  -> reg ptr u8[XWING_MSGBYTES]
+{
+  stack u8[XWING_EXPANDED_SEEDBYTES] expanded_s;
+  reg ptr u8[XWING_EXPANDED_SEEDBYTES] expanded;
+  reg ptr u8[MLKEM_SYMBYTES + MLKEM_SYMBYTES] expanded_mlkem;
+  reg ptr u8[X25519_BYTES] expanded_x25519;
+  reg ptr u8[X25519_BYTES] ct_x25519;
+  reg ptr u8[MLKEM_CIPHERTEXTBYTES] ct_mlkem;
+  stack u8[X25519_BYTES] pk_x25519_s;
+  reg ptr u8[X25519_BYTES] pk_x25519;
+  stack u8[MLKEM_PUBLICKEYBYTES] pk_mlkem_s;
+  reg ptr u8[MLKEM_PUBLICKEYBYTES] pk_mlkem;
+  stack u8[MLKEM_SECRETKEYBYTES] sk_mlkem_s;
+  reg ptr u8[MLKEM_SECRETKEYBYTES] sk_mlkem;
+  stack u8[MLKEM_SYMBYTES] ss_mlkem_s;
+  reg ptr u8[MLKEM_SYMBYTES] ss_mlkem;
+
+  () = #spill(shkp);
+  () = #spill(ctp);
+
+  // expanded = SHAKE256(sk, 96)
+  expanded = expanded_s;
+  expanded = _shake256_A96__A32(expanded, skp);
+  expanded_s = expanded;
+
+  // (pk_M, sk_M) = ML-KEM-768.KeyGen_internal(expanded[0:32], expanded[32:64])
+  expanded_mlkem = expanded_s[0:MLKEM_SYMBYTES + MLKEM_SYMBYTES];
+  sk_mlkem = sk_mlkem_s;
+  pk_mlkem = pk_mlkem_s;
+  pk_mlkem, sk_mlkem, _ = jade_kem_mlkem_mlkem768_amd64_avx2_keypair_derand(pk_mlkem, sk_mlkem, expanded_mlkem);
+  pk_mlkem_s = pk_mlkem;
+  sk_mlkem_s = sk_mlkem;
+  // decaps pk_mlkem sk_mlkem = keygen pk_mlkem sk_mlkem
+
+  // ignoring the assignment sk_X = expanded[64:96] as we do not use it in this step key generation
+  // pk_X = X25519(sk_X, X25519_BASE)
+  expanded_x25519 = expanded_s[MLKEM_SYMBYTES + MLKEM_SYMBYTES:X25519_BYTES];
+  pk_x25519 = pk_x25519_s;
+  pk_x25519 = xwing_x25519_base(pk_x25519, expanded_x25519);
+  pk_x25519_s = pk_x25519;
+
+  // ct_M = ct[0:1088]
+  // ct_X = ct[1088:1120]
+  () = #unspill(ctp);
+  ct_mlkem = ctp[0:MLKEM_CIPHERTEXTBYTES];
+  () = #spill(ctp);
+  // decaps ct_mlkem = enc ct_mlkem
+  // ss_M = ML-KEM-768.Decapsulate(ct_M, sk_M)
+  ss_mlkem = ss_mlkem_s;
+  ss_mlkem, _ = jade_kem_mlkem_mlkem768_amd64_avx2_dec(ss_mlkem, ct_mlkem, sk_mlkem);
+  ss_mlkem_s = ss_mlkem;
+
+  // ss_X = X25519(sk_X, ct_X)
+  () = #unspill(ctp);
+  expanded_x25519 = expanded_s[MLKEM_SYMBYTES + MLKEM_SYMBYTES:X25519_BYTES];
+  ct_x25519 = ctp[MLKEM_CIPHERTEXTBYTES:X25519_BYTES];
+  () = #unspill(shkp);
+  () = #spill(ctp);
+  shkp = xwing_x25519(shkp, expanded_x25519, ct_x25519);
+
+  // ss = Combiner(ss_M, ss_X, ct_X, pk_X)
+  () = #unspill(ctp);
+  ss_mlkem = ss_mlkem_s;
+  pk_x25519 = pk_x25519_s;
+  ct_x25519 = ctp[MLKEM_CIPHERTEXTBYTES:X25519_BYTES];
+  shkp = _sha3_256_A128__A6(shkp, ss_mlkem, ct_x25519, pk_x25519);
+
+  return shkp;
+}
+*/
 
 
 fn _crypto_xkem_dec_jazz(
@@ -153,7 +203,7 @@ fn _crypto_xkem_dec_jazz(
   stack u8[MLKEM_SYMBYTES + MLKEM_SYMBYTES] expanded_mlkem;
   stack u8[X25519_BYTES] expanded_x25519;
   stack u8[XWING_SECRETKEYBYTES] sskp;
-  stack u8[XWING_MSGBYTES] ss;
+  //stack u8[XWING_MSGBYTES] ss;
   stack u8[XWING_CIPHERTEXTBYTES] sctp;
   stack u8[X25519_BYTES] ct_x25519;
   stack u8[X25519_BYTES] pk_x25519;
@@ -193,14 +243,13 @@ fn _crypto_xkem_dec_jazz(
   ss_x25519 = xwing_x25519(ss_x25519, expanded_x25519, ct_x25519);
 
   // ss = Combiner(ss_M, ss_X, ct_X, pk_X)
-  ss = _sha3_256_A128__A6(ss, ss_mlkem, ss_x25519, ct_x25519, pk_x25519);
+  ss_x25519 = _sha3_256_A128__A6(ss_x25519, ss_mlkem, ct_x25519, pk_x25519);
 
   () = #unspill(shkp);
 
-  for i = 0 to XWING_MSGBYTES/8 { t64 = ss[u64 i]; shkp[u64 i] = t64;  }
+  for i = 0 to XWING_MSGBYTES/8 { t64 = ss_x25519[u64 i]; shkp[u64 i] = t64;  }
   return shkp;
 }
-*/
 
 fn _crypto_xkem_enc_derand_jazz(
     reg ptr u8[XWING_CIPHERTEXTBYTES] ctp,
@@ -212,7 +261,7 @@ fn _crypto_xkem_enc_derand_jazz(
   inline int i;
   reg u64 t64;
   stack u8[XWING_PUBLICKEYBYTES] spkp;
-  stack u8[XWING_MSGBYTES] ss;
+  //stack u8[XWING_MSGBYTES] ss;
   stack u8[XWING_ENC_SEEDBYTES] seseed;
   stack u8[MLKEM_SYMBYTES] seed_mlkem;
   stack u8[X25519_BYTES] ct_x25519;
@@ -244,7 +293,7 @@ fn _crypto_xkem_enc_derand_jazz(
   ct_mlkem, ss_mlkem, _ =  jade_kem_mlkem_mlkem768_amd64_avx2_enc_derand(ct_mlkem, ss_mlkem, pk_mlkem, seed_mlkem);
 
   // ss = Combiner(ss_M, ss_X, ct_X, pk_X)
-  ss = _sha3_256_A128__A6(ss, ss_mlkem, ss_x25519, ct_x25519, pk_x25519);
+  ss_x25519 = _sha3_256_A128__A6(ss_x25519, ss_mlkem, ct_x25519, pk_x25519);
 
   () = #unspill(shkp, ctp);
 
@@ -252,69 +301,8 @@ fn _crypto_xkem_enc_derand_jazz(
   for i = 0 to MLKEM_CIPHERTEXTBYTES/8 { t64 = ct_mlkem[u64 i]; ctp[u64 i] = t64;  }
   for i = 0 to X25519_BYTES/8 { t64 = ct_x25519[u64 i]; ctp[u64 MLKEM_CIPHERTEXTBYTES/8 + i ] = t64;  }
 
-  for i = 0 to XWING_MSGBYTES/8 { t64 = ss[u64 i]; shkp[u64 i] = t64;  }
+  for i = 0 to XWING_MSGBYTES/8 { t64 = ss_x25519[u64 i]; shkp[u64 i] = t64;  }
 
   return ctp, shkp;
-}
-
-
-fn _crypto_xkem_dec_jazz(
-  reg ptr u8[XWING_MSGBYTES] shkp,
-  reg ptr u8[XWING_CIPHERTEXTBYTES] ctp,
-  reg ptr u8[XWING_SECRETKEYBYTES] skp) // sk = seed, so call it randomness for clarity of its purpose
-  -> reg ptr u8[XWING_MSGBYTES]
-{
-  inline int i;
-  reg u64 t64;
-  stack u8[XWING_EXPANDED_SEEDBYTES] expanded;
-  stack u8[MLKEM_SYMBYTES + MLKEM_SYMBYTES] expanded_mlkem;
-  stack u8[X25519_BYTES] expanded_x25519;
-  stack u8[XWING_SECRETKEYBYTES] sskp;
-  stack u8[XWING_MSGBYTES] ss;
-  stack u8[XWING_CIPHERTEXTBYTES] sctp;
-  stack u8[X25519_BYTES] ct_x25519;
-  stack u8[X25519_BYTES] pk_x25519;
-  stack u8[X25519_BYTES] ss_x25519;
-  stack u8[MLKEM_CIPHERTEXTBYTES] ct_mlkem;
-  stack u8[MLKEM_PUBLICKEYBYTES] pk_mlkem;
-  stack u8[MLKEM_SYMBYTES] ss_mlkem;
-  stack u8[MLKEM_SECRETKEYBYTES] sk_mlkem;
-
-  () = #spill(shkp, ctp, skp);
-
-  sctp = #copy(ctp);
-  sskp = #copy(skp);
-
-  // expanded = SHAKE256(sk, 96)
-  expanded = _shake256_A96__A32(expanded, sskp);
-
-  // (pk_M, sk_M) = ML-KEM-768.KeyGen_internal(expanded[0:32], expanded[32:64])
-  expanded_mlkem = expanded[0:MLKEM_SYMBYTES + MLKEM_SYMBYTES];
-  pk_mlkem, sk_mlkem, _ = jade_kem_mlkem_mlkem768_amd64_avx2_keypair_derand(pk_mlkem, sk_mlkem, expanded_mlkem);
-  // decaps pk_mlkem sk_mlkem = keygen pk_mlkem sk_mlkem
-
-  // ignoring the assignment sk_X = expanded[64:96] as we do not use it in this step key generation
-  // pk_X = X25519(sk_X, X25519_BASE)
-  expanded_x25519 = expanded[MLKEM_SYMBYTES + MLKEM_SYMBYTES:X25519_BYTES];
-  pk_x25519 = xwing_x25519_base(pk_x25519, expanded_x25519);
-
-  // ct_M = ct[0:1088]
-  // ct_X = ct[1088:1120]
-  ct_mlkem = sctp[0:MLKEM_CIPHERTEXTBYTES];
-  ct_x25519 = sctp[MLKEM_CIPHERTEXTBYTES:X25519_BYTES];
-  // decaps ct_mlkem = enc ct_mlkem
-
-  // ss_M = ML-KEM-768.Decapsulate(ct_M, sk_M)
-  // ss_X = X25519(sk_X, ct_X)
-  ss_mlkem, _ = jade_kem_mlkem_mlkem768_amd64_avx2_dec(ss_mlkem, ct_mlkem, sk_mlkem);
-  ss_x25519 = xwing_x25519(ss_x25519, expanded_x25519, ct_x25519);
-
-  // ss = Combiner(ss_M, ss_X, ct_X, pk_X)
-  ss = _sha3_256_A128__A6(ss, ss_mlkem, ss_x25519, ct_x25519, pk_x25519);
-
-  () = #unspill(shkp);
-
-  for i = 0 to XWING_MSGBYTES/8 { t64 = ss[u64 i]; shkp[u64 i] = t64;  }
-  return shkp;
 }
 

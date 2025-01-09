@@ -10,10 +10,10 @@ export fn jade_kem_xwing_xwing_amd64_avx2_keypair_derand(
       
   _ = #init_msf();
 
-  () = #spill(coins);
-  
-  
-  
+  public_key = public_key;
+  secret_key = secret_key;
+  coins = coins;
+
   public_key, secret_key = _crypto_xkem_keypair_derand_jazz(public_key, secret_key, coins);  
   
   ?{}, r = #set0();
@@ -31,7 +31,10 @@ export fn jade_kem_xwing_xwing_amd64_avx2_enc_derand(
 
   _ = #init_msf();
 
-  () = #spill(public_key, coins);
+  ciphertext = ciphertext;
+  shared_secret = shared_secret;
+  public_key = public_key;
+  coins = coins;
   ciphertext, shared_secret =_crypto_xkem_enc_derand_jazz(ciphertext, shared_secret, public_key, coins);
   ?{}, r = #set0();
   return ciphertext, shared_secret, r;
@@ -48,7 +51,9 @@ export fn jade_kem_xwing_xwing_amd64_avx2_dec(
 
   _ = #init_msf();
 
-  () = #spill(ciphertext, secret_key);
+  shared_secret = shared_secret;
+  ciphertext = ciphertext;
+  secret_key = secret_key;
   shared_secret = _crypto_xkem_dec_jazz(shared_secret, ciphertext, secret_key);
   
   ?{}, r = #set0();

@@ -40,9 +40,9 @@ def Combiner(ss_M, ss_X, ct_X, pk_X):
      ))
  */
 fn _sha3_256_A128__A6
-( #spill_to_mmx reg mut ptr u8[32] out
+( #spill_to_mmx reg mut ptr u8[32] ss_x25519
 , reg const ptr u8[32] ss_mlkem
-, reg const ptr u8[32] ss_x25519
+/* , reg const ptr u8[32] ss_x25519     OBS: reusing ss_x25519 to store the output */
 , reg const ptr u8[32] ct_x25519
 , reg const ptr u8[32] pk_x25519
 ) -> reg ptr u8[32]
@@ -61,6 +61,6 @@ fn _sha3_256_A128__A6
   offset = 0;
   pst, _, st, _ = A6::__pabsorb_array_avx2(pst, 128, st, XWING_LABEL, offset, 6, R136, SHA3);
   offset = 0;
-  out, _ = A32::__squeeze_array_avx2(out, offset, 32, st, R136);
-  return out;
+  ss_x25519, _ = A32::__squeeze_array_avx2(ss_x25519, offset, 32, st, R136);
+  return ss_x25519;
 }
