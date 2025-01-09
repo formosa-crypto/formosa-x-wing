@@ -1,17 +1,38 @@
 require import AllCore IntDiv CoreMap List Distr IntDiv StdOrder.
 
-from Jasmin require import JModel_x86 JModel JWord JUtils.
+from MLKEM require import MLKEM_KEM_avx2_stack.
 
-import SLH64 StdOrder.IntOrder.
 
-require import X. _Wing_Keccak_Avx2.
+from MLKEM require import Mlkem_filter48_bindings.
+require import XWing_keccak_avx2.
+
+
+from MLKEM require import MLKEM_genmatrix_avx2.
+
+from CryptoSpecs require import Correctness.
+
+from Jasmin require import JModel_x86.
+from JazzEC require import Array32 Array536 Array2048.
+
+from CryptoSpecs require import Correctness.
+from JazzEC require import Jkem_avx2 (* Mlkem_filter48 *).
+
+from MLKEM require import Mlkem_filters_bridge.
+from MLKEM require import MLKEM_KEM_avx2_stack.
+
 
 from JazzEC require import WArray4 WArray6 WArray32 WArray64 WArray96 WArray1088 WArray1120 WArray1184 WArray1216 WArray2400.
 from JazzEC require import Array4 Array6 Array8 Array32 Array64 Array96 Array140 Array152 Array128 Array960 Array1088 Array1120 Array1184 Array1216 Array2400 Array1152.
 
+require import Xkem_avx2_clean XWing_Helper_Functions.
 
-require import Xkem_avx2 Xkem_avx2_clean XWing_Spec XWing_Helper_Functions CorrectnessProof_Mulx Mulx_scalarmult_s Jkem_avx2_stack FIPS202_SHA3 Curve25519_Procedures MLKEM InnerPKE MLKEM_KEM_avx2_stack Symmetric.
+from JazzEC require import Xkem_avx2 Mulx_scalarmult_s Jkem_avx2_stack.
 
+from X25519 require import CorrectnessProof_Mulx Curve25519_Procedures.
+
+from CryptoSpecs require import MLKEM Symmetric InnerPKE FIPS202_SHA3.
+
+from MLKEM require import Mlkem_filter48_bindings.
 
 lemma copy1120 (a : W8.t Array1120.t) :
   Array1120.init (fun (i : int)  =>  WArray1120.get8 (WArray1120.init64

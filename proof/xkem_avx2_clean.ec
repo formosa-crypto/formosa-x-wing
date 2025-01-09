@@ -18,7 +18,7 @@ WArray2048 WArray2144 WArray2400 WArray4608.
 from JazzEC require import Mulx_scalarmult_s Jkem_avx2_stack.
 from CryptoSpecs require import FIPS202_SHA3.
 
-require import CorrectnessProof_Mulx.
+from X25519 require import CorrectnessProof_Mulx.
 
 abbrev xWING_LABEL =
 (Array6.of_list witness

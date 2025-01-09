@@ -1,8 +1,11 @@
 require import AllCore Int List.
 from Jasmin require import JWord.
 
-require import MLKEM Curve25519_Procedures Keccak1600_Spec.
-require import Array128 Array32 Array6 Array96.
+from CryptoSpecs require import MLKEM.
+from CryptoSpecs require import Keccak1600_Spec.
+
+from X25519 require import Curve25519_Procedures.
+from JazzEC require import Array128 Array32 Array6 Array96.
 
 type X25519_publickey = W8.t Array32.t.
 type X25519_secretkey = W8.t Array32.t.

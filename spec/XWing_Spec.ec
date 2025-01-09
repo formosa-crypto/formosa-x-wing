@@ -1,9 +1,12 @@
 require import AllCore Int List.
 from Jasmin require import JWord.
 
-require import MLKEM XWing_Helper_Functions.
-require import Curve25519_Procedures.
-require import Array32 Array96.
+from CryptoSpecs require import MLKEM.
+from X25519 require import Curve25519_Procedures.
+
+require import XWing_Helper_Functions.
+
+from JazzEC require import Array32 Array96.
 
 module XWing = {
 

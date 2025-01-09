@@ -1,4 +1,9 @@
-require import Xkem_avx2_clean XWing_Spec.
+require import AllCore.
+
+require import Xkem_avx2_clean XWing_Spec XWing_Helper_Functions.
+
+from Jasmin require import JModel.
+from JazzEC require import Array32.
 
 axiom shake256_A96_A32 out inp :
   phoare [Xkem_avx2_clean.M._shake256_A96__A32 :
