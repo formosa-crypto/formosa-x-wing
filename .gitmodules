@@ -14,7 +14,3 @@
 	path = formosa-keccak
 	url = git@github.com:formosa-crypto/formosa-keccak.git
 	branch = bdep
-[submodule "jasmin"]
-	path = jasmin
-	url = git@github.com:jasmin-lang/jasmin
-	branch = fix-eclib-avx2-shifts
