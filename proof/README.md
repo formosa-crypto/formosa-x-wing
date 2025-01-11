@@ -1,15 +1,18 @@
-> [!WARNING]  
-> This proof is still work in progress.
-
 # X-Wing Proof
 
-This repository contains formally verified proofs of the game-based proofs presented in the [X-Wing paper](https://cic.iacr.org/p/1/1/21).
+This repository contains formally verified proofs X-Wing hybrid scheme.
 
-This proof has been tested using the 2024.09 version of Easycrypt.
 
 ## Proof structure
 
 The proof has the following structure:
+
+### Implementation Correctness proof
+
+1. `X-Wing-Correction-Proof.ec` correctness proof of the implementation (source code in `../code/jasmin/
+2. `XWing_keccak_avx2.ec` correctness of the concrete Keccak instances used by X-Wing.
+
+### Security Proof
 
 1. `KEM_ROM.ec` contains the abstract theory that defines a KEM and related security games, such as IND-CPA and IND-CCA. It then defines a concrete theory concerning KEMs in the ROM, and KEMs with two ROMs. The latter is required as the adversary will have access to two oracles in the X-Wing proof: an X-Wing decapsulation oracle, and the KEM oracle. This is because the KEM that X-Wing is instantiated with is proven to be secure in the ROM.
 2. `NomGroup.eca` defines the abstract theory concerning nominal groups, and hence, X25519.
