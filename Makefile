@@ -1,4 +1,11 @@
+ECJOBS   ?= 2
+ECCONF   := config/tests.config
+CHECKS   ?= xwing
+
+ECCHECK := easycrypt runtest
+
 XWING_SRC := code/crypto_kem/xwing/amd64/avx2
+
 
 .PHONY: default jasmin extract clean_eco clean_asm clean
 
@@ -12,6 +19,9 @@ test:
 
 extract:
 	make -C $(XWING_SRC)/extraction
+
+check:
+	$(ECCHECK) $(ECCONF) $(CHECKS)
 
 clean_asm:
 	-rm -f $(XWING_SRC)/jkem.s

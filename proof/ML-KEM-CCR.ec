@@ -1,4 +1,4 @@
-require import AllCore Distr StdOrder SmtMap Real DProd.
+require import AllCore Distr StdOrder FMap Real DProd.
 require import KEM_ROM.
 
 type pkey.
