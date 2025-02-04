@@ -1,4 +1,4 @@
-require import AllCore KEM_ROM PROM Distr StdOrder SmtMap List.
+require import AllCore KEM_ROM PROM Distr StdOrder FMap List.
 require (****) NomGroup PRF.
 
 clone import NomGroup as NG.

@@ -5,8 +5,7 @@ type G.
 
 op g : G.
 
-op p : { int | 2 <= p } as ge2_p.
-axiom prime_p : prime p.
+op p : { int | prime p } as prime_p.
 
 clone import Subtype as EH with 
    type T <- int 
@@ -15,7 +14,6 @@ clone import Subtype as EH with
 clone import ZModField with
    op p <- p
    proof prime_p by exact prime_p
-   proof ge2_p by exact ge2_p
    proof *.
 
 clone import Subtype as EU with 
