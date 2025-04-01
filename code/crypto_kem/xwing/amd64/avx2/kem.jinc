@@ -171,6 +171,7 @@ fn _crypto_xkem_dec_jazz(
   // decaps ct_mlkem = enc ct_mlkem
   // ss_M = ML-KEM-768.Decapsulate(ct_M, sk_M)
   ss_mlkem = ss_mlkem_s;
+  sk_mlkem = sk_mlkem_s;
   ss_mlkem, _ = jade_kem_mlkem_mlkem768_amd64_avx2_dec(ss_mlkem, ct_mlkem, sk_mlkem);
   ss_mlkem_s = ss_mlkem;
 
