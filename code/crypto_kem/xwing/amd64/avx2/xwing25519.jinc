@@ -9,7 +9,7 @@ fn xwing_x25519_base(#spill_to_mmx reg mut ptr u8[32] qp, reg const ptr u8[32] n
 
   q = __curve25519_mulx_base(n); // q = nG
 
-  () = #unspill(qp,np);
+  () = #unspill(qp);
   qp = #copy(q);
   return qp;
 
