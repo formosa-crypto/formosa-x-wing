@@ -14,7 +14,7 @@ TEST_HEADERS := $(XWING_TEST_SRC)/test_vectors.h $(XWING_TEST_SRC)/test_kem.h
 TEST_SOURCES := $(XWING_TEST_SRC)/test_kem.c
 
 $(XWING_SRC)/jkem.s : $(XWING_SRC)/jkem.jazz
-	$(JASMINC) $(JFLAGS) -o $@ $(JFLAGS) $(JINCLUDE_MLKEM) $(JINCLUDE_X25519) $(JINCLUDE_KECCAK) $^
+	$(JASMINC) $(JFLAGS) -o $@ $(JINCLUDE_MLKEM) $(JINCLUDE_X25519) $(JINCLUDE_KECCAK) $^
 
 $(XWING_SRC)/test/test_kem: $(TEST_SOURCES) $(TEST_HEADERS) $(XWING_SRC)/jkem.s
 	$(CC) $(CFLAGS) $(TEST_SOURCES) $(XWING_SRC)/jkem.s -o $@
