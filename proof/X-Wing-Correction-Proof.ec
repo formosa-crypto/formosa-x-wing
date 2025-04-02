@@ -240,7 +240,8 @@ proc => /=.
 inline {2} 1.
 seq 14 2: (skp{1}=sk{2} /\ expanded_s{1}=expanded{2}).
  wp; ecall {1} (shake256_A96_A32 expanded{1} randomness{1}).
- cfold {1} ^aux<-.
+ cfold {1} ^inc<-.
+ 
  wp; while {1} (0 <= i{1} <= 4 /\ sub randomness{1} 0 (8*i{1}) = sub skp{1} 0 (8*i{1}))
                (4-i{1}).
   move=> /> z; auto => /> &m Hi1 _ IH Hi2; split.
@@ -292,35 +293,37 @@ lemma eq_spec_xwing_enc:
    /\ res{2}.`2 = res{1}.`2].
 proof.
 proc => />.
-print copy1216.
-proc rewrite {1} ^spkp<-{2} (copy1216).
-proc rewrite {1} ^seseed<-{2} (copy64).
-seq 12 0 : (#pre /\ spkp{1} = pkp{1} /\ spkp{1} = pkp{1} /\ seseed{1} = eseed{1}).
- by auto => />.
-seq 1 1  : (#pre /\ pk_M{2}.`1 = Array1152.init (fun (i:int) => pk_mlkem{1}.[i])
+swap {1} 14 -5.
+seq 9 1  : (#pre /\ pk_M{2}.`1 = Array1152.init (fun (i:int) => pk_mlkem{1}.[i])
             /\ pk_M{2}.`2 = Array32.init (fun (i:int) => pk_mlkem{1}.[i+1152])
             /\ pk_M{2}.`1 = Array1152.init (fun (i:int) => pkp{1}.[i])
             /\ pk_M{2}.`2 = Array32.init (fun (i:int) => pkp{1}.[i+1152])).
  auto => />; rewrite !tP; move => &1 &2 [#] H H0 H1 H2 H3; do split.
   by move => i ib; rewrite !initiE 1,2:/# H1 1:/#  !initiE 1,2:/#.
  by move => i ib; rewrite !initiE 1:/# //= H2 1:/# !initiE 1,2:/# //=.
+ swap {1} 12 -11.
 seq 1 1  : (#pre /\ pk_X{2} = Array32.init (fun (i:int) => pk_x25519{1}.[i])
             /\ pk_X{2} = Array32.init (fun (i:int) => pkp{1}.[i+1184])).
  auto => />; rewrite !tP; move => &1 &2 [#] H H0 H1 H2 H3 H4 H5 H6 H7 H8 H9.
  by rewrite !initiE 1,2:/# //= H3 1:/# !initiE 1,2:/#.
+ swap {1} 2 -1.
 seq 1 1  : (#pre /\ ek_X{2} = Array32.init (fun (i:int) => ek_x25519{1}.[i])
-            /\ ek_X{2} = Array32.init (fun (i:int) => seseed{1}.[i+32])).
+            /\ ek_X{2} = Array32.init (fun (i:int) => eseed{1}.[i+32])).
  auto => />; rewrite !tP; move => &1 &2 [#] H H0 H1 H2 H3 H4 H5 H6 H7 H8 H9 H10.
  by  rewrite !initiE 1,2:/# //= H0 1:/# !initiE 1,2:/#.
-swap{1} 3 -2.
+swap{1} 4 -3.
 seq 1 1  : (#pre /\ c_M{2} = seed_mlkem{1}
-            /\ c_M{2} = Array32.init (fun (i:int) => seseed{1}.[i])).
+            /\ c_M{2} = Array32.init (fun (i:int) => eseed{1}.[i])).
  by auto => />.
-seq 1 1 : (#pre /\ pack32 (to_list ct_x25519{1}) = ct_X_256{2}).
+seq 2 1 : (#pre /\ pack32 (to_list ct_x25519{1}) = ct_X_256{2}).
  call eq_spec_xwing_25519_base_mulx; auto => />.
  move => &1 &2 H H0 H1 H2 H3 H4 H5 H6 H7 H8 H9.
  by congr; congr; congr; rewrite tP => *; smt(Array32.initiE).
-seq 1 1 : (#pre /\ pack32 (to_list ss_x25519{1}) = ss_X_256{2}).
+ swap {1} 7 -6. seq 1 0 : (#pre). auto => />.
+ move => &1 &2 H H0 H1 H2 H3 H4 H5 H6 H7 H8 H9.
+   rewrite tP => *; smt(Array32.initiE).
+swap {1} 7 -6.
+seq 1 1 : (#pre /\ pack32 (to_list shkp{1}) = ss_X_256{2}).
  call eq_spec_xwing_25519_mulx; auto => />.
  move => &1 &2 H H0 H1 H2 H3 H4 H5 H6 H7 H8 H9; do split.
   by congr; congr; congr; rewrite tP => *; smt(Array32.initiE).
@@ -330,12 +333,13 @@ seq 0 1 : (#pre /\ ct_X{2} = ct_x25519{1}).
  rewrite !/of_list !/to_list !/mkseq -iotaredE => />.
  rewrite tP => i ib.
  by rewrite initiE 1,2:/#.
-seq 0 1 : (#pre /\ ss_X{2} = ss_x25519{1}).
+seq 0 1 : (#pre /\ ss_X{2} = shkp{1}).
  auto => /> &1 &2 H H0 H1 H2 H3 H4 H5 H6 H7 H8 H9.
  rewrite !/of_list !/to_list !/mkseq -iotaredE => />.
  rewrite tP => i ib.
  by rewrite initiE 1,2:/#.
-seq 2 3 : (#{~ss_x25519{1}}pre /\ ct_M{2}.`1 = Array960.init(fun i => ct_mlkem{1}.[i])
+
+seq 10 3 : (#{~shkp{1}}pre /\ ct_M{2}.`1 = Array960.init(fun i => ct_mlkem{1}.[i])
            /\ ct_M{2}.`2 = Array128.init(fun i => ct_mlkem{1}.[i+960])
            /\ ct{2}.`1.`1 = Array960.init(fun i => ct_mlkem{1}.[i])
            /\ ct{2}.`1.`2 = Array128.init(fun i => ct_mlkem{1}.[i+960])
@@ -344,100 +348,44 @@ seq 2 3 : (#{~ss_x25519{1}}pre /\ ct_M{2}.`1 = Array960.init(fun i => ct_mlkem{1
            /\ ct_x25519{1} = ct_X{2}
            /\ ct_M{2}.`1 = ct{2}.`1.`1
            /\ ct_M{2}.`2 = ct{2}.`1.`2
-           /\ ss_M{2} = ss_mlkem{1}
-           /\ ss_x25519{1} = ss{2}) => /=.
- inline {2} 2; wp; sp.
- ecall {1} (sha3_256_A128__A6 ss_mlkem{1} ss_x25519{1} ct_x25519{1} pk_x25519{1}).
- call mlkem_kem_correct_enc; auto => />.
- move => /> &1 &2 H H0 H1 H2 H3 H4 H5 H6 H7 H8 H9.
- move=> []ct1 ss1 ? []st2 ss2.
- move=> /> H10 H11.
- split. 
-  by rewrite tP => i ib; rewrite initiE 1:// /= /#.
- congr; congr.
- by rewrite tP => i ib; rewrite initiE /#.
-conseq (: true ==> 
-            ctp{1} = Array1120.init (fun i => if i < 1088 
+           /\ ss_M{2} = ss_mlkem{1} /\
+           ctp{1} = Array1120.init (fun i => if i < 1088 
                                               then ct_mlkem{1}.[i]
                                               else ct_x25519{1}.[i-1088])
-            /\ shkp{1} = ss_x25519{1}).
- move=> &1 &2 /> -> -> -> -> -> /=; do split.
- + by rewrite tP=> i Hi; rewrite !initiE /#.
- + by rewrite tP=> i Hi; rewrite !initiE 1..2:// /= initiE /#.
- by rewrite tP=> i Hi; rewrite !initiE 1..2:// /= initiE 1:/# /= initiE /#.
-cfold {1} ^aux<-{3}; cfold {1} ^aux<-{2}; cfold {1} ^aux<-.
-wp; while {1} (0 <= i{1} <= 4 /\ 
-               sub shkp{1} 0 (8*i{1}) = sub ss_x25519{1} 0 (8*i{1})) (4-i{1}) => //=.
- move=> z; auto => /> &m Hi1 _ IH Hi2.
- do split; 1..2,4:smt().
- apply (eq_from_nth witness); first by rewrite !size_sub /#.
- move => i; rewrite size_sub 1:/# => Hi.
- rewrite !mulzDr /=.
- rewrite /sub !mkseq_add 1..4:/#; congr; congr.
-  move: IH; rewrite /sub /= => <-.
-  apply eq_in_mkseq => k Hk /=.
-  rewrite !initiE 1:/# get8_set64_directE 1,2:/# ifF 1:/#.
-  by rewrite /get8 /init8 initiE 1:/#.
- apply eq_in_mkseq => k Hk /=.
- rewrite !initiE 1:/# get8_set64_directE 1,2:/# ifT 1:/#.
- by rewrite get64E /init8 pack8bE 1:/# !initiE 1:/# /= initiE /#.
-wp; while {1} (0 <= i{1} <= 4 /\ sub ctp{1} 0 1088 = sub ct_mlkem{1} 0 1088 /\
-               sub ctp{1} 1088 (8*i{1}) = sub ct_x25519{1} 0 (8*i{1})) (4-i{1}) => //=.
- move=> z; auto => /> &m Hi1 _ IH1 IH2 Hi2.
- do split; 1..2,5:smt().
-  rewrite -IH1; apply (eq_from_nth witness); first by rewrite !size_sub /#.
-  move=> i; rewrite size_sub /sub 1:/# => Hi.
-  rewrite !nth_mkseq 1..2:// /= initiE 1:/# get8_set64_directE 1,2:/# ifF 1:/#.
-  by rewrite /get8 /init8 !initiE /#.
- apply (eq_from_nth witness); first by rewrite !size_sub /#.
- move => i; rewrite size_sub 1:/# => Hi.
- rewrite !mulzDr /=.
- rewrite /sub !mkseq_add 1..4:/#; congr; congr.
-  move: IH2; rewrite /sub /= => <-.
-  apply eq_in_mkseq => k Hk /=.
-  rewrite !initiE 1:/# get8_set64_directE 1,2:/# ifF 1:/#.
-  by rewrite /get8 /init8 initiE 1:/#.
- apply eq_in_mkseq => k Hk /=.
- rewrite !initiE 1:/# get8_set64_directE 1,2:/# ifT 1:/#.
- by rewrite get64E /init8 pack8bE 1:/# !initiE 1:/# /= initiE /#.
-wp; while {1} (0 <= i{1} <= 136 /\ 
-               sub ctp{1} 0 (8*i{1}) = sub ct_mlkem{1} 0 (8*i{1})) (136-i{1}) => //=.
- move=> z; auto => /> &m Hi1 _ IH Hi2.
- do split; 1..2,4:smt().
- apply (eq_from_nth witness); first by rewrite !size_sub /#.
- move => i; rewrite size_sub 1:/# => Hi.
- rewrite !mulzDr /=.
- rewrite /sub !mkseq_add 1..4:/#; congr; congr.
-  move: IH; rewrite /sub /= => <-.
-  apply eq_in_mkseq => k Hk /=.
-  rewrite !initiE 1:/# get8_set64_directE 1,2:/# ifF 1:/#.
-  by rewrite /get8 /init8 initiE 1:/#.
- apply eq_in_mkseq => k Hk /=.
- rewrite !initiE 1:/# get8_set64_directE 1,2:/# ifT 1:/#.
- by rewrite get64E /init8 pack8bE 1:/# !initiE 1:/# /= initiE /#.
-auto => /> &m; split.
- by rewrite /sub !mkseq0.
-move=> ctp1 i1 />; split; first smt().
-move=> ???; have ->/=: i1=136 by smt().
-move=> H1; split.
- by rewrite /sub !mkseq0.
-move=> ctp2 i2 />; split; first smt().
-move=> ???; have ->/=: i2=4 by smt().
-move=> H2 H3; split.
- by rewrite /sub !mkseq0.
-move=> i3 shkp />; split; first smt().
-move=> ???; have ->/=: i3=4 by smt().
-move=> H4; split.
- rewrite tP => k Hk; rewrite initiE 1://.
- case: (k < 1088) => C; rewrite C /=.
-  have /=<- := (Array1088.nth_sub witness ct_mlkem{m} 0 1088).
-   smt().
-  by rewrite -H2 nth_sub 1:/#.
- have /= := (Array1120.nth_sub witness ctp2 1088 32 (k-1088) _).
-  smt().
- by rewrite H3 nth_sub /#.
-rewrite tP => i Hi.
-by rewrite -(Array32.nth_sub witness shkp 0 32 i) 1:// H4 nth_sub /#.
+           /\ shkp{1} = ss{2}) => /=.
+ inline {2} 2; wp; sp.
+ ecall {1} (sha3_256_A128__A6 ss_mlkem{1} shkp{1} ct_x25519{1} pk_x25519{1}).
+ wp.
+ call mlkem_kem_correct_enc; auto => />.
+ move => /> &1 &2 H H0 H1 H2 H3 H4 H5 H6 H7 H8 H9 H10.
+ move=> []ct1 ss1 ? []st2 ss2.
+ move=> /> H11 H12.
+ do split. 
+  by rewrite tP => i ib; rewrite initiE 1:// /= /#.
+ rewrite tP => i ib. rewrite !initiE // /= !initiE => />; 1:smt().
+ auto => />. rewrite ifF;1:smt(). rewrite !initiE => />; 1:smt().
+ by rewrite ifT;1:smt().
+  rewrite tP => i ib. rewrite !initiE // /= !initiE => />; 1:smt().
+ auto => />. rewrite ifF;1:smt(). rewrite !initiE => />; 1:smt().
+ by rewrite ifT;1:smt().
+  rewrite tP=> i Hi. rewrite !initiE //= /=. 
+  case(0 <= i && i < 1088) => C1 />. by rewrite ifT;1:smt().
+  case(1088 <= i && i < 1120) => C2 />. rewrite ifF;1:smt().
+ + rewrite !initiE 1..2:// /= 1:/#. rewrite ifT;1:smt().
+ rewrite !initiE 1..2:// /= initiE 1:/# /=. rewrite ifF;1:smt(). 
+ by rewrite ifT;1:smt(). smt().
+ congr; congr.
+  rewrite tP => i ib. rewrite !initiE // /= !initiE => />; 1:smt().
+ auto => />. rewrite ifF;1:smt(). rewrite !initiE => />; 1:smt().
+ by rewrite ifT;1:smt().
+  rewrite tP => i ib. smt(Array32.initiE).
+  auto => />. 
+  move => &1 &2 H H0 H1 H2 H3 H4 H5. do split.
+ + rewrite tP=> i Hi; rewrite !initiE 1..2:// /=. smt(). rewrite ifT; 1:smt(). 
+ smt(Array960.initiE).
+ + rewrite tP=> i Hi; rewrite !initiE 1..2:// /= !initiE //= 1:/#. rewrite ifT; 1:smt(). 
+ smt(Array128.initiE).
+ + rewrite tP=> i Hi; rewrite !initiE 1..2:// /= !initiE 1:/#. smt(). 
 qed.
 
 lemma eq_spec_xwing_dec:
@@ -450,37 +398,37 @@ lemma eq_spec_xwing_dec:
    ={res}].
 proof.
 proc => />.
-proc rewrite {1} ^sctp<-{2} (copy1120).
-proc rewrite {1} ^sskp<-{2} (copy32).
 inline {2} 1; auto => />.
-seq 15 2 : (#pre /\ expanded{1} = SHAKE256_32_96 sskp{1}
-            /\ skp{1} = sskp{1}
-            /\ sctp{1} = ctp{1}
+seq 17 2 : (#pre /\ expanded{1} = SHAKE256_32_96 skp{1} /\ expanded_s{1} = expanded{1}
             /\ ={expanded}
-            /\ sskp{1} = sk0{2}
-            /\ sskp{1} = sk{2}).
- by ecall {1} (shake256_A96_A32 expanded{1} sskp{1}); wp; skip => />.
-swap{1} 3 -2; swap{2} 3 -2.
-seq 1 1 : (#pre /\ coins3{2} = expanded_x25519{1}
-           /\ coins3{2} = Array32.init(fun (i : int) => expanded{1}.[i + 64])
-           /\ coins3{2} = Array32.init(fun (i : int) => expanded{2}.[i + 64])).
- auto => /> &1 &2 [#] H H0 H1; rewrite !tP; do split.
-  by move => i ib; rewrite !initiE 1,2:/# //= /#.
- by move => i ib; rewrite !initiE 1,2:/# //= /#.
-seq 1 2 : (#pre /\ coins1{2} = Array32.init (fun (i : int ) => expanded_mlkem{1}.[i])
+            
+            /\ skp{1} = sk0{2}
+            /\ skp{1} = sk{2}).
+ wp.
+ by ecall {1} (shake256_A96_A32 expanded{1} skp{1}); wp; skip => />.
+ 
+ seq 1 2 : (#pre /\ coins1{2} = Array32.init (fun (i : int ) => expanded_mlkem{1}.[i])
            /\ coins2{2} = Array32.init (fun (i : int ) => expanded_mlkem{1}.[32 + i])
-           /\ coins1{2} = Array32.init (fun (i : int ) => expanded{1}.[i])
-           /\ coins2{2} = Array32.init (fun (i : int ) => expanded{1}.[32 + i])
+           /\ coins1{2} = Array32.init (fun (i : int ) => expanded_s{1}.[i])
+           /\ coins2{2} = Array32.init (fun (i : int ) => expanded_s{1}.[32 + i])
            /\ coins1{2} = Array32.init (fun (i : int ) => expanded{2}.[i])
            /\ coins2{2} = Array32.init (fun (i : int ) => expanded{2}.[32+i])).
  auto => />; move => &1 &2 [#] H H0 H1; do split.
   by rewrite tP => i ib; rewrite !initiE 1..5:/# //=.
  by rewrite tP => i ib; rewrite !initiE 1..2:/# //= !initiE 1..3:/# //=.
 auto => />.
-seq 0 1 : (#pre /\ expanded_x25519{1} = sk_X0{2}
+swap {1} 6 -5.   
+seq 1 1 : (#pre /\ coins3{2} = expanded_x25519{1}
+           /\ coins3{2} = Array32.init(fun (i : int) => expanded{1}.[i + 64])
+           /\ coins3{2} = Array32.init(fun (i : int) => expanded{2}.[i + 64])).
+ auto => /> &1 &2 [#] H H0 H1 H2 H3; rewrite !tP. do split.
+  by move => i ib; rewrite !initiE 1,2:/# //= /#.
+ by move => i ib; rewrite !initiE 1,2:/# //= /#.
+seq 2 1 : (#pre /\ expanded_x25519{1} = sk_X0{2}
            /\ sk_X0{2} = coins3{2}); auto => />.
-swap{1} 1 1.
-seq 1 1 : (#pre /\ pack32 (to_list pk_x25519{1}) = pk_X_256{2}).
+swap{1} 4 -3.
+swap{1} 5 -3.
+seq 2 1 : (#pre /\ pack32 (to_list pk_x25519{1}) = pk_X_256{2}).
  by call eq_spec_xwing_25519_base_mulx; auto => />.
 seq 0 1 : (#pre /\ pk_x25519{1} = pk_X0{2}
            /\ pk_x25519{1} = Array32.of_list W8.zero (W32u8.to_list pk_X_256{2})); auto => />.
@@ -506,59 +454,46 @@ seq 1 1 : (#pre /\ pk_M0{2}.`1 = (init (fun (i : int) =>  pk_mlkem{1}.[i]))%Arra
            /\ rho = Array32.init(fun i => pk_mlkem{1}.[i+1152])).
  by call mlkem_kem_correct_kg; auto => /> /#. 
 auto => />.
-seq 0 2 : (#pre /\ sk_M{2} = sk_M0{2}
+seq 3 2 : (#pre /\ sk_M{2} = sk_M0{2} /\
+            pk_mlkem_s{1} = pk_mlkem{1} /\
+            sk_mlkem_s{1} = sk_mlkem{1} /\
+            pk_x25519_s{1} = pk_x25519{1} 
            /\ sk_X{2} = sk_X0{2}
            /\ pk_M{2} = pk_M0{2}
            /\  pk_X{2} = pk_X0{2}); auto => />.
-seq 2 2 : (#pre /\ Array960.init (fun (i:int) => ct_mlkem{1}.[i]) = ct_M{2}.`1
+swap{1} 6 -5.
+swap{1} 7 -5.
+seq 3 2 : (#pre /\ Array960.init (fun (i:int) => ct_mlkem{1}.[i]) = ct_M{2}.`1
            /\ Array128.init (fun (i:int) => ct_mlkem{1}.[i+960]) = ct_M{2}.`2
            /\ ct_x25519{1} = ct_X{2}
-           /\ ct_M{2}.`1 = (init (fun (i_0 : int) => sctp{1}.[0 + i_0]))%Array960
-           /\ ct_M{2}.`2 = (init (fun (i_0 : int) => sctp{1}.[960 + i_0]))%Array128
-           /\ ct_X{2} = (init (fun (i_0 : int) => sctp{1}.[3 * 320 + 128 + i_0]))%Array32).
- wp; auto => /> &1 &2 [#] H H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 ?.
+           /\ ct_M{2}.`1 = (init (fun (i_0 : int) => ctp{1}.[0 + i_0]))%Array960
+           /\ ct_M{2}.`2 = (init (fun (i_0 : int) => ctp{1}.[960 + i_0]))%Array128
+           /\ ct_X{2} = (init (fun (i_0 : int) => ctp{1}.[3 * 320 + 128 + i_0]))%Array32).
+ wp; auto => /> &1 &2 [#] H H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13.
  rewrite !tP; do split.
- + by move => i ib; rewrite H !initiE 1..3:/# //=.
+ + move => i b; rewrite !initiE 1..3:/#. 
+ + move => i b; rewrite !initiE 1..3:/#. 
+ + by move => i ib; rewrite H !initiE 1..3:/#. 
  + by move => i ib; rewrite H1 !initiE 1:/# //= !initiE 1:/# //=.
  + by move => i ib; rewrite H2 !initiE 1:/# //= //= /#.
  + by move => i ib; rewrite H1 !initiE 1:/# //= //= /#.
  + by move => i ib; rewrite H2 !initiE 1:/# //= //= /#.
+ seq 2 0: (#pre). auto => />. 
 seq 1 1 : (#pre /\ ss_mlkem{1} = ss_M{2}).
  call mlkem_kem_correct_dec; auto => />.
  move => /> &1 &2 eH H0 H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16 H17 H18 H19.
- rewrite !tP; do split; 1:smt().
- by move => i ib; rewrite H14 1:/#.
-seq 1 1 : (#pre /\ pack32 (to_list ss_x25519{1}) = ss_X_256{2} /\ expanded_x25519{1} = sk_X{2}).
- by call eq_spec_xwing_25519_mulx; auto => />.
-seq 0 1 : (#pre /\ ss_X{2} = ss_x25519{1}); auto => />.
- rewrite !tP; move => *.
- by rewrite !/of_list !/to_list !/mkseq -!iotaredE => />; rewrite !initiE 1:/# /#.
-seq 1 1 : (ss_x25519{1}=ss{2}).
- inline {2} 1; wp; sp.
- ecall {1} (sha3_256_A128__A6 ss_mlkem{1} ss_x25519{1} ct_x25519{1} pk_x25519{1}).
- by wp; skip => />.
-cfold {1} ^aux<-.
-wp; while {1} (0 <= i{1} <= 4 /\ 
-               sub shkp{1} 0 (8*i{1}) = sub ss_x25519{1} 0 (8*i{1})) (4-i{1}) => //=.
- move=> z; auto => /> &m Hi1 _ IH Hi2.
- do split; 1..2,4:smt().
- apply (eq_from_nth witness); first by rewrite !size_sub /#.
- move => i; rewrite size_sub 1:/# => Hi.
- rewrite !mulzDr /=.
- rewrite /sub !mkseq_add 1..4:/#; congr; congr.
-  move: IH; rewrite /sub /= => <-.
-  apply eq_in_mkseq => k Hk /=.
-  rewrite !initiE 1:/# get8_set64_directE 1,2:/# ifF 1:/#.
-  by rewrite /get8 /init8 initiE 1:/#.
- apply eq_in_mkseq => k Hk /=.
- rewrite !initiE 1:/# get8_set64_directE 1,2:/# ifT 1:/#.
- by rewrite get64E /init8 pack8bE 1:/# !initiE 1:/# /= initiE /#.
-auto => /> &1 &2; split.
- by rewrite /sub !mkseq0.
-move=> i shkp />; split; first smt().
-move=> ???; have ->/=: i=4 by smt().
-move=> H; rewrite tP => k Hk.
-by rewrite -(Array32.nth_sub witness shkp 0 32 k) 1:// H nth_sub /#.
+ rewrite !tP; do split; 1:smt(). auto => />.
+ move => i Li Hi. smt(Array128.initiE).
+ seq 1 0 : (#{~(ss_mlkem_s{1} = witness)}pre /\ ss_mlkem{1} = ss_mlkem_s{1}). auto => />.
+seq 1 1 : (#pre /\ pack32 (to_list shkp{1}) = ss_X_256{2} /\ expanded_x25519{1} = sk_X{2}).
+  call eq_spec_xwing_25519_mulx; auto => />.
+  inline {2} 2; wp; sp. 
+ ecall {1} (sha3_256_A128__A6 ss_mlkem{1} shkp{1} ct_x25519{1} pk_x25519{1}).
+ wp; skip => />. 
+  move => /> &1 &2 eH H0 H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15 H16.
+  congr; congr.
+  rewrite !/of_list !/to_list !/mkseq -!iotaredE => />. 
+  rewrite tP => i ib; rewrite !initiE //=. smt().
 qed.
 
 lemma xwing_kg_correct:

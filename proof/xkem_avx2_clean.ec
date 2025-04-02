@@ -12,7 +12,7 @@ from JazzEC require Mulx_scalarmult_s.
 from JazzEC require Jkem_avx2_stack.
 
 module M = {
-  proc xwing_x25519_base (qp:W8.t Array32.t, np:W8.t Array32.t) : W8.t Array32.t = {
+     proc xwing_x25519_base (qp:W8.t Array32.t, np:W8.t Array32.t) : W8.t Array32.t = {
     var n:W64.t Array4.t;
     var q:W64.t Array4.t;
     n <- witness;
@@ -21,7 +21,7 @@ module M = {
     (copy_64
     (Array4.init (fun i => (get64 (WArray32.init8 (fun i => np.[i])) i))));
     (* Erased call to spill *)
-    q <@ Mulx_scalarmult_s.M.__curve25519_mulx_base (n);
+    q <@ Mulx_scalarmult_s.M.__curve25519_mulx_base(n);
     (* Erased call to unspill *)
     qp <-
     (Array32.init
@@ -54,7 +54,7 @@ module M = {
                                          skp:W8.t Array32.t,
                                          randomness:W8.t Array32.t) : 
   W8.t Array1216.t * W8.t Array32.t = {
-    var aux:int;
+    var inc:int;
     var i:int;
     var t64:W64.t;
     var expanded_s:W8.t Array96.t;
@@ -74,9 +74,9 @@ module M = {
     pk_x25519 <- witness;
     sk_mlkem <- witness;
     sk_mlkem_s <- witness;
-    aux <- (32 %/ 8);
+    inc <- (32 %/ 8);
     i <- 0;
-    while ((i < aux)) {
+    while ((i < inc)) {
       t64 <- (get64 (WArray32.init8 (fun i_0 => randomness.[i_0])) i);
       skp <-
       (Array32.init
@@ -86,7 +86,7 @@ module M = {
     }
     (* Erased call to spill *)
     expanded <- expanded_s;
-    expanded <@ Xkem_avx2.M._shake256_A96__A32 (expanded, randomness);
+    expanded <@ Xkem_avx2.M._shake256_A96__A32(expanded, randomness);
     expanded_s <- expanded;
     pk_x25519 <- (Array32.init (fun i_0 => pkp.[(((3 * 384) + 32) + i_0)]));
     (* Erased call to spill *)
@@ -115,108 +115,19 @@ module M = {
     (* Erased call to unspill *)
     return (pkp, skp);
   }
-  proc _crypto_xkem_dec_jazz (shkp:W8.t Array32.t, ctp:W8.t Array1120.t,
-                              skp:W8.t Array32.t) : W8.t Array32.t = {
-    var aux:int;
-    var sctp:W8.t Array1120.t;
-    var sskp:W8.t Array32.t;
-    var expanded:W8.t Array96.t;
-    var expanded_mlkem:W8.t Array64.t;
-    var pk_mlkem:W8.t Array1184.t;
-    var sk_mlkem:W8.t Array2400.t;
-    var expanded_x25519:W8.t Array32.t;
-    var pk_x25519:W8.t Array32.t;
-    var ct_mlkem:W8.t Array1088.t;
-    var ct_x25519:W8.t Array32.t;
-    var ss_mlkem:W8.t Array32.t;
-    var ss_x25519:W8.t Array32.t;
-    var i:int;
-    var t64:W64.t;
-    var  _0:W64.t;
-    var  _1:W64.t;
-    ct_mlkem <- witness;
-    ct_x25519 <- witness;
-    expanded <- witness;
-    expanded_mlkem <- witness;
-    expanded_x25519 <- witness;
-    pk_mlkem <- witness;
-    pk_x25519 <- witness;
-    sctp <- witness;
-    sk_mlkem <- witness;
-    ss_mlkem <- witness;
-    ss_x25519 <- witness;
-    sskp <- witness;
-    (* Erased call to spill *)
-    sctp <-
-    (Array1120.init
-    (fun i_0 => (get8
-                (WArray1120.init64
-                (fun i_0 => (copy_64
-                            (Array140.init
-                            (fun i_0 => (get64
-                                        (WArray1120.init8
-                                        (fun i_0 => ctp.[i_0])) i_0))
-                            )).[i_0])
-                ) i_0))
-    );
-    sskp <-
-    (Array32.init
-    (fun i_0 => (get8
-                (WArray32.init64
-                (fun i_0 => (copy_64
-                            (Array4.init
-                            (fun i_0 => (get64
-                                        (WArray32.init8
-                                        (fun i_0 => skp.[i_0])) i_0))
-                            )).[i_0])
-                ) i_0))
-    );
-    expanded <@ Xkem_avx2.M._shake256_A96__A32 (expanded, sskp);
-    expanded_mlkem <- (Array64.init (fun i_0 => expanded.[(0 + i_0)]));
-    (pk_mlkem, sk_mlkem,  _0) <@ Jkem_avx2_stack.M.jade_kem_mlkem_mlkem768_amd64_avx2_keypair_derand (
-    pk_mlkem, sk_mlkem, expanded_mlkem);
-    expanded_x25519 <-
-    (Array32.init (fun i_0 => expanded.[((32 + 32) + i_0)]));
-    pk_x25519 <@ xwing_x25519_base (pk_x25519, expanded_x25519);
-    ct_mlkem <- (Array1088.init (fun i_0 => sctp.[(0 + i_0)]));
-    ct_x25519 <-
-    (Array32.init (fun i_0 => sctp.[(((3 * 320) + 128) + i_0)]));
-    (ss_mlkem,  _1) <@ Jkem_avx2_stack.M.jade_kem_mlkem_mlkem768_amd64_avx2_dec (ss_mlkem,
-    ct_mlkem, sk_mlkem);
-    ss_x25519 <@ xwing_x25519 (ss_x25519, expanded_x25519, ct_x25519);
-    ss_x25519 <@ Xkem_avx2.M._sha3_256_A128__A6 (ss_x25519, ss_mlkem, ct_x25519,
-    pk_x25519);
-    (* Erased call to unspill *)
-    aux <- (32 %/ 8);
-    i <- 0;
-    while ((i < aux)) {
-      t64 <- (get64 (WArray32.init8 (fun i_0 => ss_x25519.[i_0])) i);
-      shkp <-
-      (Array32.init
-      (WArray32.get8
-      (WArray32.set64 (WArray32.init8 (fun i_0 => shkp.[i_0])) i t64)));
-      i <- (i + 1);
-    }
-    return shkp;
-  }
   proc _crypto_xkem_enc_derand_jazz (ctp:W8.t Array1120.t,
                                      shkp:W8.t Array32.t,
                                      pkp:W8.t Array1216.t,
                                      eseed:W8.t Array64.t) : W8.t Array1120.t *
                                                              W8.t Array32.t = {
-    var aux:int;
-    var spkp:W8.t Array1216.t;
-    var seseed:W8.t Array64.t;
-    var pk_mlkem:W8.t Array1184.t;
-    var pk_x25519:W8.t Array32.t;
-    var ek_x25519:W8.t Array32.t;
     var ct_x25519:W8.t Array32.t;
-    var ss_x25519:W8.t Array32.t;
+    var ek_x25519:W8.t Array32.t;
     var seed_mlkem:W8.t Array32.t;
+    var pk_mlkem:W8.t Array1184.t;
     var ct_mlkem:W8.t Array1088.t;
+    var ss_mlkem_s:W8.t Array32.t;
     var ss_mlkem:W8.t Array32.t;
-    var i:int;
-    var t64:W64.t;
+    var pk_x25519:W8.t Array32.t;
     var  _0:W64.t;
     ct_mlkem <- witness;
     ct_x25519 <- witness;
@@ -224,78 +135,119 @@ module M = {
     pk_mlkem <- witness;
     pk_x25519 <- witness;
     seed_mlkem <- witness;
-    seseed <- witness;
-    spkp <- witness;
     ss_mlkem <- witness;
-    ss_x25519 <- witness;
+    ss_mlkem_s <- witness;
     (* Erased call to spill *)
-    spkp <-
-    (Array1216.init
-    (fun i_0 => (get8
-                (WArray1216.init64
-                (fun i_0 => (copy_64
-                            (Array152.init
-                            (fun i_0 => (get64
-                                        (WArray1216.init8
-                                        (fun i_0 => pkp.[i_0])) i_0))
-                            )).[i_0])
-                ) i_0))
-    );
-    seseed <-
-    (Array64.init
-    (fun i_0 => (get8
-                (WArray64.init64
-                (fun i_0 => (copy_64
-                            (Array8.init
-                            (fun i_0 => (get64
-                                        (WArray64.init8
-                                        (fun i_0 => eseed.[i_0])) i_0))
-                            )).[i_0])
-                ) i_0))
-    );
-    pk_mlkem <- (Array1184.init (fun i_0 => spkp.[(0 + i_0)]));
-    pk_x25519 <- (Array32.init (fun i_0 => spkp.[(((3 * 384) + 32) + i_0)]));
-    ek_x25519 <- (Array32.init (fun i_0 => seseed.[(32 + i_0)]));
+    ct_x25519 <- (Array32.init (fun i => ctp.[(((3 * 320) + 128) + i)]));
+    ek_x25519 <- (Array32.init (fun i => eseed.[(32 + i)]));
+    (* Erased call to spill *)
+    (* Erased call to spill *)
     ct_x25519 <@ xwing_x25519_base (ct_x25519, ek_x25519);
-    ss_x25519 <@ xwing_x25519 (ss_x25519, ek_x25519, pk_x25519);
-    seed_mlkem <- (Array32.init (fun i_0 => seseed.[(0 + i_0)]));
+    (* Erased call to unspill *)
+    ctp <-
+    (Array1120.init
+    (fun i => (if (((3 * 320) + 128) <= i < (((3 * 320) + 128) + 32)) then 
+              ct_x25519.[(i - ((3 * 320) + 128))] else ctp.[i]))
+    );
+    (* Erased call to unspill *)
+    seed_mlkem <- (Array32.init (fun i => eseed.[(0 + i)]));
+    (* Erased call to unspill *)
+    pk_mlkem <- (Array1184.init (fun i => pkp.[(0 + i)]));
+    ct_mlkem <- (Array1088.init (fun i => ctp.[(0 + i)]));
+    ss_mlkem <- ss_mlkem_s;
+    (* Erased call to spill *)
     (ct_mlkem, ss_mlkem,  _0) <@ Jkem_avx2_stack.M.jade_kem_mlkem_mlkem768_amd64_avx2_enc_derand (
     ct_mlkem, ss_mlkem, pk_mlkem, seed_mlkem);
-    ss_x25519 <@ Xkem_avx2.M._sha3_256_A128__A6 (ss_x25519, ss_mlkem, ct_x25519,
-    pk_x25519);
     (* Erased call to unspill *)
-    aux <- (((3 * 320) + 128) %/ 8);
-    i <- 0;
-    while ((i < aux)) {
-      t64 <- (get64 (WArray1088.init8 (fun i_0 => ct_mlkem.[i_0])) i);
-      ctp <-
-      (Array1120.init
-      (WArray1120.get8
-      (WArray1120.set64 (WArray1120.init8 (fun i_0 => ctp.[i_0])) i t64)));
-      i <- (i + 1);
-    }
-    aux <- (32 %/ 8);
-    i <- 0;
-    while ((i < aux)) {
-      t64 <- (get64 (WArray32.init8 (fun i_0 => ct_x25519.[i_0])) i);
-      ctp <-
-      (Array1120.init
-      (WArray1120.get8
-      (WArray1120.set64 (WArray1120.init8 (fun i_0 => ctp.[i_0]))
-      ((((3 * 320) + 128) %/ 8) + i) t64)));
-      i <- (i + 1);
-    }
-    aux <- (32 %/ 8);
-    i <- 0;
-    while ((i < aux)) {
-      t64 <- (get64 (WArray32.init8 (fun i_0 => ss_x25519.[i_0])) i);
-      shkp <-
-      (Array32.init
-      (WArray32.get8
-      (WArray32.set64 (WArray32.init8 (fun i_0 => shkp.[i_0])) i t64)));
-      i <- (i + 1);
-    }
+    ss_mlkem_s <- ss_mlkem;
+    ctp <-
+    (Array1120.init
+    (fun i => (if (0 <= i < (0 + 1088)) then ct_mlkem.[(i - 0)] else ctp.[i]))
+    );
+    (* Erased call to unspill *)
+    ek_x25519 <- (Array32.init (fun i => eseed.[(32 + i)]));
+    pk_x25519 <- (Array32.init (fun i => pkp.[(((3 * 384) + 32) + i)]));
+    (* Erased call to unspill *)
+    (* Erased call to spill *)
+    shkp <@ xwing_x25519 (shkp, ek_x25519, pk_x25519);
+    ss_mlkem <- ss_mlkem_s;
+    (* Erased call to unspill *)
+    pk_x25519 <- (Array32.init (fun i => pkp.[(((3 * 384) + 32) + i)]));
+    ct_x25519 <- (Array32.init (fun i => ctp.[(((3 * 320) + 128) + i)]));
+    shkp <@ Xkem_avx2.M._sha3_256_A128__A6 (shkp, ss_mlkem, ct_x25519, pk_x25519);
+    (* Erased call to unspill *)
     return (ctp, shkp);
+  }
+  proc _crypto_xkem_dec_jazz (shkp:W8.t Array32.t, ctp:W8.t Array1120.t,
+                              skp:W8.t Array32.t) : W8.t Array32.t = {
+    var expanded_s:W8.t Array96.t;
+    var expanded:W8.t Array96.t;
+    var expanded_mlkem:W8.t Array64.t;
+    var sk_mlkem_s:W8.t Array2400.t;
+    var sk_mlkem:W8.t Array2400.t;
+    var pk_mlkem_s:W8.t Array1184.t;
+    var pk_mlkem:W8.t Array1184.t;
+    var expanded_x25519:W8.t Array32.t;
+    var pk_x25519_s:W8.t Array32.t;
+    var pk_x25519:W8.t Array32.t;
+    var ct_mlkem:W8.t Array1088.t;
+    var ss_mlkem_s:W8.t Array32.t;
+    var ss_mlkem:W8.t Array32.t;
+    var ct_x25519:W8.t Array32.t;
+    var  _0:W64.t;
+    var  _1:W64.t;
+    ct_mlkem <- witness;
+    ct_x25519 <- witness;
+    expanded <- witness;
+    expanded_mlkem <- witness;
+    expanded_s <- witness;
+    expanded_x25519 <- witness;
+    pk_mlkem <- witness;
+    pk_mlkem_s <- witness;
+    pk_x25519 <- witness;
+    pk_x25519_s <- witness;
+    sk_mlkem <- witness;
+    sk_mlkem_s <- witness;
+    ss_mlkem <- witness;
+    ss_mlkem_s <- witness;
+    (* Erased call to spill *)
+    (* Erased call to spill *)
+    expanded <- expanded_s;
+    expanded <@ Xkem_avx2.M._shake256_A96__A32 (expanded, skp);
+    expanded_s <- expanded;
+    expanded_mlkem <- (Array64.init (fun i => expanded_s.[(0 + i)]));
+    sk_mlkem <- sk_mlkem_s;
+    pk_mlkem <- pk_mlkem_s;
+    (pk_mlkem, sk_mlkem,  _0) <@ Jkem_avx2_stack.M.jade_kem_mlkem_mlkem768_amd64_avx2_keypair_derand (
+    pk_mlkem, sk_mlkem, expanded_mlkem);
+    pk_mlkem_s <- pk_mlkem;
+    sk_mlkem_s <- sk_mlkem;
+    expanded_x25519 <-
+    (Array32.init (fun i => expanded_s.[((32 + 32) + i)]));
+    pk_x25519 <- pk_x25519_s;
+    pk_x25519 <@ xwing_x25519_base (pk_x25519, expanded_x25519);
+    pk_x25519_s <- pk_x25519;
+    (* Erased call to unspill *)
+    ct_mlkem <- (Array1088.init (fun i => ctp.[(0 + i)]));
+    (* Erased call to spill *)
+    ss_mlkem <- ss_mlkem_s;
+    sk_mlkem <- sk_mlkem_s;
+    (ss_mlkem,  _1) <@ Jkem_avx2_stack.M.jade_kem_mlkem_mlkem768_amd64_avx2_dec (ss_mlkem,
+    ct_mlkem, sk_mlkem);
+    ss_mlkem_s <- ss_mlkem;
+    (* Erased call to unspill *)
+    expanded_x25519 <-
+    (Array32.init (fun i => expanded_s.[((32 + 32) + i)]));
+    ct_x25519 <- (Array32.init (fun i => ctp.[(((3 * 320) + 128) + i)]));
+    (* Erased call to unspill *)
+    (* Erased call to spill *)
+    shkp <@ xwing_x25519 (shkp, expanded_x25519, ct_x25519);
+    (* Erased call to unspill *)
+    ss_mlkem <- ss_mlkem_s;
+    pk_x25519 <- pk_x25519_s;
+    ct_x25519 <- (Array32.init (fun i => ctp.[(((3 * 320) + 128) + i)]));
+    shkp <@ Xkem_avx2.M._sha3_256_A128__A6 (shkp, ss_mlkem, ct_x25519, pk_x25519);
+    return shkp;
   }
   proc jade_kem_xwing_xwing_amd64_avx2_keypair_derand (public_key:W8.t Array1216.t,
                                                        secret_key:W8.t Array32.t,
